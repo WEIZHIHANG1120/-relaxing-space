@@ -4,7 +4,7 @@
 由 Genspark 和我共同创建的在线放松平台  
 Created with Genspark
 
-[![Live Demo](https://img.shields.io/badge/立即访问-click here-00b4d8?style=for-the-badge)](https://weizhihang1120.github.io/-relaxing-space/)
+[![Live Demo](https://img.shields.io/badge/立即访问-clickhere-00b4d8?style=for-the-badge)](https://weizhihang1120.github.io/-relaxing-space/)
 
 ## ✨ 核心功能 | Core Features
 
