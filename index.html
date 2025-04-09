@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -107,12 +106,89 @@
         }
         
         .mood-history-card {
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+            flex: 0 0 280px;
         }
         
         .mood-history-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mood-cards-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 15px 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .mood-cards-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .mood-cards-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .mood-cards-container::-webkit-scrollbar-thumb {
+            background: #b6e0fe;
+            border-radius: 10px;
+        }
+        
+        .mood-cards-container::-webkit-scrollbar-thumb:hover {
+            background: #90cdf4;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .card-animation {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .music-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60px;
+            margin: 10px 0;
+        }
+        
+        .music-bar {
+            width: 4px;
+            height: 20px;
+            background: #63b3ed;
+            margin: 0 2px;
+            border-radius: 2px;
+            animation: sound 0ms -800ms linear infinite alternate;
+        }
+        
+        @keyframes sound {
+            0% {
+                height: 5px;
+            }
+            100% {
+                height: 40px;
+            }
+        }
+        
+        .delete-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .delete-btn:hover {
+            color: #f56565;
         }
     </style>
 </head>
@@ -132,6 +208,18 @@
                     <h2 class="text-2xl text-teal-700 mb-4 text-center">轻音乐放松</h2>
                     <p class="text-center mb-6">选择一段舒缓的音乐，让心灵沉浸在宁静之中</p>
                     
+                    <div class="music-visual" id="musicVisual">
+                        <div class="music-bar" style="animation-duration: 474ms;"></div>
+                        <div class="music-bar" style="animation-duration: 433ms;"></div>
+                        <div class="music-bar" style="animation-duration: 407ms;"></div>
+                        <div class="music-bar" style="animation-duration: 458ms;"></div>
+                        <div class="music-bar" style="animation-duration: 400ms;"></div>
+                        <div class="music-bar" style="animation-duration: 427ms;"></div>
+                        <div class="music-bar" style="animation-duration: 441ms;"></div>
+                        <div class="music-bar" style="animation-duration: 419ms;"></div>
+                        <div class="music-bar" style="animation-duration: 487ms;"></div>
+                    </div>
+                    
                     <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
                         <div class="flex items-center space-x-4">
                             <button id="playPauseBtn" class="music-btn p-3 rounded-full bg-blue-100 hover:bg-blue-200 focus:outline-none">
@@ -149,27 +237,27 @@
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-2">
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/forest-sounds@main/gentle-forest-stream.mp3">
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/rain-forest.mp3">
                             <i class="fas fa-tree text-green-600 mr-2"></i> 森林溪流
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/ocean-sounds@main/calm-ocean-waves.mp3">
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/ocean-waves.mp3">
                             <i class="fas fa-water text-blue-600 mr-2"></i> 海浪声
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/piano@main/gentle-piano.mp3">
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/meditation-piano.mp3">
                             <i class="fas fa-music text-purple-600 mr-2"></i> 轻柔钢琴曲
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/meditation@main/meditation-bowl.mp3">
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/meditation-bells.mp3">
                             <i class="fas fa-spa text-yellow-600 mr-2"></i> 冥想音乐
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/rain-sounds@main/gentle-rain.mp3">
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/rain-ambience.mp3">
                             <i class="fas fa-cloud-rain text-blue-500 mr-2"></i> 雨声
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/birds@main/morning-birds.mp3">
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/birds-chirping.mp3">
                             <i class="fas fa-dove text-indigo-600 mr-2"></i> 晨鸟鸣唱
                         </button>
                     </div>
@@ -177,6 +265,27 @@
                     <p id="nowPlaying" class="text-center text-sm text-gray-500 mt-3 hidden">
                         正在播放: <span id="currentTrack"></span>
                     </p>
+                    
+                    <!-- 备用音频播放器 -->
+                    <div class="mt-6">
+                        <h3 class="text-center text-gray-600 mb-3">或者直接使用以下音频播放器</h3>
+                        <audio controls class="w-full" controlsList="nodownload">
+                            <source src="https://cdn.jsdelivr.net/gh/relaxedland/audio/forest-stream.mp3" type="audio/mpeg">
+                            您的浏览器不支持音频播放。
+                        </audio>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
+                            <select id="directAudioSelector" class="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/forest-stream.mp3">森林溪流</option>
+                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/ocean-waves.mp3">海浪声</option>
+                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/piano-meditation.mp3">钢琴冥想</option>
+                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/soft-rain.mp3">柔和雨声</option>
+                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/birds-morning.mp3">晨鸟歌唱</option>
+                            </select>
+                            <button id="applyAudioSelection" class="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 focus:outline-none">
+                                应用选择
+                            </button>
+                        </div>
+                    </div>
                     
                     <!-- 隐藏的音频元素 -->
                     <audio id="audioPlayer"></audio>
@@ -271,12 +380,7 @@
             <section class="mb-16">
                 <div class="mood-tracker p-8">
                     <h2 class="text-2xl text-teal-700 mb-6 text-center">分享您的心情</h2>
-                    <p class="text-center mb-6">记录当下的心情，与他人分享您的感受</p>
-                    
-                    <div class="mb-6">
-                        <label for="username" class="block mb-2 text-gray-700">您的名字 (可选):</label>
-                        <input type="text" id="username" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="留空则显示为"匿名用户"">
-                    </div>
+                    <p class="text-center mb-6">记录当下的心情，分享您的感受</p>
                     
                     <div class="mood-selector flex flex-wrap justify-center gap-4 mb-8">
                         <button class="mood-btn p-4 rounded-full bg-red-100 hover:bg-red-200 focus:outline-none" onclick="selectMood('joyful')">
@@ -308,7 +412,7 @@
                     
                     <div class="flex justify-center space-x-4">
                         <button id="saveMoodBtn" class="btn-primary px-6 py-2 rounded-lg text-white focus:outline-none">
-                            分享心情
+                            记录心情
                         </button>
                         <button id="clearPersonalBtn" class="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none">
                             清除我的记录
@@ -319,17 +423,27 @@
                 </div>
             </section>
 
-            <!-- 共享历史记录区域 -->
+            <!-- 共享历史记录区域 - 滚轮式显示 -->
             <section class="mb-20">
                 <div class="card p-8">
                     <h2 class="text-2xl text-teal-700 mb-6 text-center">心情共享墙</h2>
-                    <p class="text-center mb-6">在这里，我们彼此分享心情，互相给予温暖与理解</p>
+                    <p class="text-center mb-6">在这里，我们互相分享心情，给予温暖与理解</p>
                     
-                    <div id="sharedMoodHistory" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                        <!-- 历史记录将在这里动态加载 -->
-                        <div class="text-center text-gray-500 col-span-full py-8" id="noRecordsMessage">
-                            暂无记录，成为第一个分享心情的人吧！
-                        </div>
+                    <div class="mood-cards-container" id="moodCardsContainer">
+                        <!-- 历史记录将在这里动态加载为横向滚动卡片 -->
+                    </div>
+                    
+                    <div class="text-center text-gray-500 py-8 hidden" id="noRecordsMessage">
+                        暂无记录，成为第一个分享心情的人吧！
+                    </div>
+                    
+                    <div class="flex justify-center mt-4">
+                        <button id="scrollLeftBtn" class="p-2 bg-blue-100 text-blue-700 rounded-full mr-4 focus:outline-none">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="scrollRightBtn" class="p-2 bg-blue-100 text-blue-700 rounded-full focus:outline-none">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -356,7 +470,7 @@
 
         <!-- 页脚 -->
         <footer class="text-center text-gray-500 mt-12 pt-4 border-t border-gray-200">
-            <p>心灵休憩空间 © 2023 - 愿你内心充满平静与阳光</p>
+            <p>心灵休憩空间 © 2025 - 愿你内心宁静，爱如少年（AI和魏之杭共同创建）</p>
         </footer>
     </div>
 
@@ -370,12 +484,28 @@
         const nowPlaying = document.getElementById('nowPlaying');
         const currentTrack = document.getElementById('currentTrack');
         const musicOptions = document.querySelectorAll('.music-option');
+        const musicVisual = document.getElementById('musicVisual');
+        const musicBars = document.querySelectorAll('.music-bar');
+        const directAudioSelector = document.getElementById('directAudioSelector');
+        const applyAudioSelection = document.getElementById('applyAudioSelection');
         
         let isPlaying = false;
         let currentMusicBtn = null;
         
         // 初始化音量
         audioPlayer.volume = volumeSlider.value / 100;
+        
+        // 隐藏音乐可视化
+        musicVisual.style.display = 'none';
+        
+        // 应用直接音频选择
+        applyAudioSelection.addEventListener('click', function() {
+            const selectedAudio = directAudioSelector.value;
+            const audioElement = document.querySelector('audio[controls]');
+            audioElement.src = selectedAudio;
+            audioElement.load();
+            audioElement.play();
+        });
         
         // 播放/暂停按钮
         playPauseBtn.addEventListener('click', function() {
@@ -391,9 +521,14 @@
             if (isPlaying) {
                 audioPlayer.pause();
                 playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
+                musicVisual.style.display = 'none';
             } else {
-                audioPlayer.play();
+                audioPlayer.play().catch(error => {
+                    console.log("播放失败，可能是浏览器政策限制或音频源不可用:", error);
+                    displayErrorMessage("音频播放失败，请尝试其他音乐或使用直接播放器");
+                });
                 playPauseBtn.innerHTML = '<i class="fas fa-pause text-blue-700"></i>';
+                musicVisual.style.display = 'flex';
             }
             
             isPlaying = !isPlaying;
@@ -436,12 +571,16 @@
                 currentTrack.textContent = this.textContent.trim();
                 
                 // 播放音乐
-                audioPlayer.play();
+                audioPlayer.play().catch(error => {
+                    console.log("播放失败，可能是浏览器政策限制或音频源不可用:", error);
+                    displayErrorMessage("音频播放失败，请尝试其他音乐或使用直接播放器");
+                });
                 playPauseBtn.innerHTML = '<i class="fas fa-pause text-blue-700"></i>';
                 isPlaying = true;
                 
-                // 显示正在播放信息
+                // 显示正在播放信息和可视化效果
                 nowPlaying.classList.remove('hidden');
+                musicVisual.style.display = 'flex';
             });
         });
         
@@ -449,7 +588,39 @@
         audioPlayer.addEventListener('ended', function() {
             isPlaying = false;
             playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
+            musicVisual.style.display = 'none';
         });
+        
+        // 音乐播放错误时
+        audioPlayer.addEventListener('error', function() {
+            isPlaying = false;
+            playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
+            musicVisual.style.display = 'none';
+            displayErrorMessage("音频文件加载失败，请尝试其他音乐或使用直接播放器");
+        });
+        
+        // 显示错误信息
+        function displayErrorMessage(message) {
+            const messageDiv = document.getElementById('moodMessage');
+            messageDiv.textContent = message;
+            messageDiv.classList.remove('hidden', 'text-green-500');
+            messageDiv.classList.add('text-red-500');
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => messageDiv.classList.add('hidden'), 5000);
+        }
+        
+        // 更新音乐可视化效果
+        function updateMusicVisuals() {
+            if (isPlaying) {
+                musicBars.forEach(bar => {
+                    const height = Math.floor(Math.random() * 35) + 5;
+                    bar.style.height = `${height}px`;
+                });
+            }
+        }
+        
+        // 定期更新音乐可视化
+        setInterval(updateMusicVisuals, 300);
         
         // 心情选择功能
         let selectedMood = '';
@@ -483,7 +654,6 @@
         
         // 保存心情记录
         document.getElementById('saveMoodBtn').addEventListener('click', function() {
-            const username = document.getElementById('username').value.trim() || '匿名用户';
             const moodNote = document.getElementById('moodNote').value;
             const messageDiv = document.getElementById('moodMessage');
             
@@ -504,7 +674,6 @@
             const moodData = {
                 id: generateUniqueId(),
                 userId: getUserId(),
-                username: username,
                 mood: selectedMood,
                 note: moodNote,
                 date: formattedDate
@@ -518,7 +687,7 @@
             localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
             
             // 显示成功消息
-            messageDiv.textContent = "您的心情已分享";
+            messageDiv.textContent = "您的心情已记录";
             messageDiv.classList.remove('hidden', 'text-red-500');
             messageDiv.classList.add('text-green-500');
             messageDiv.classList.remove('hidden');
@@ -532,7 +701,7 @@
             });
             
             // 显示历史记录
-            displaySharedMoodHistory();
+            displayMoodHistory();
         });
         
         // 清除个人记录
@@ -555,20 +724,62 @@
             setTimeout(() => messageDiv.classList.add('hidden'), 3000);
             
             // 更新显示
-            displaySharedMoodHistory();
+            displayMoodHistory();
         });
         
-        // 显示共享历史记录
-        function displaySharedMoodHistory() {
+        // 删除特定记录
+        function deleteMoodRecord(recordId) {
+            let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+            
+            // 找到要删除的记录索引
+            const recordIndex = moodHistory.findIndex(entry => entry.id === recordId);
+            
+            if (recordIndex !== -1) {
+                // 确保只删除属于当前用户的记录
+                if (moodHistory[recordIndex].userId === getUserId()) {
+                    moodHistory.splice(recordIndex, 1);
+                    localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
+                    
+                    // 显示消息
+                    const messageDiv = document.getElementById('moodMessage');
+                    messageDiv.textContent = "记录已删除";
+                    messageDiv.classList.remove('hidden', 'text-red-500');
+                    messageDiv.classList.add('text-green-500');
+                    messageDiv.classList.remove('hidden');
+                    setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+                    
+                    // 更新显示
+                    displayMoodHistory();
+                }
+            }
+        }
+        
+        // 水平滚动控制
+        document.getElementById('scrollLeftBtn').addEventListener('click', function() {
+            document.getElementById('moodCardsContainer').scrollBy({
+                left: -300,
+                behavior: 'smooth'
+            });
+        });
+        
+        document.getElementById('scrollRightBtn').addEventListener('click', function() {
+            document.getElementById('moodCardsContainer').scrollBy({
+                left: 300,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 显示心情历史记录为横向卡片
+        function displayMoodHistory() {
             const moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
-            const historyContainer = document.getElementById('sharedMoodHistory');
+            const cardsContainer = document.getElementById('moodCardsContainer');
             const noRecordsMessage = document.getElementById('noRecordsMessage');
             
             if (moodHistory.length > 0) {
                 noRecordsMessage.classList.add('hidden');
-                historyContainer.innerHTML = '';
+                cardsContainer.innerHTML = '';
                 
-                moodHistory.forEach(entry => {
+                moodHistory.forEach((entry, index) => {
                     let moodEmoji = '';
                     let moodClass = '';
                     
@@ -598,33 +809,46 @@
                             moodClass = 'bg-gray-50 border-gray-100';
                     }
                     
-                    const entryDiv = document.createElement('div');
-                    entryDiv.className = `mood-history-card p-4 rounded-lg border ${moodClass}`;
-                    entryDiv.innerHTML = `
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = `mood-history-card p-4 rounded-lg border card-animation ${moodClass}`;
+                    cardDiv.style.animationDelay = `${index * 0.1}s`;
+                    
+                    // 是当前用户的记录则显示删除按钮
+                    const deleteButton = entry.userId === getUserId() ? 
+                        `<button class="delete-btn text-gray-400 hover:text-red-500 ml-2" onclick="deleteMoodRecord('${entry.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>` : '';
+                    
+                    cardDiv.innerHTML = `
                         <div class="flex items-center justify-between mb-2">
                             <div class="flex items-center">
                                 <span class="text-xl mr-2">${moodEmoji}</span>
-                                <span class="font-medium">${entry.username}</span>
+                                <span class="font-medium">匿名用户</span>
                             </div>
-                            <span class="text-xs text-gray-500">${entry.date}</span>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500">${entry.date}</span>
+                                ${deleteButton}
+                            </div>
                         </div>
                         ${entry.note ? `<p class="text-gray-700">${entry.note}</p>` : '<p class="text-gray-500 italic">无文字记录</p>'}
                     `;
                     
                     // 标记当前用户的记录
                     if (entry.userId === getUserId()) {
-                        entryDiv.classList.add('border-l-4', 'border-l-blue-400');
+                        cardDiv.classList.add('border-l-4', 'border-l-blue-400');
                     }
                     
-                    historyContainer.appendChild(entryDiv);
+                    cardsContainer.appendChild(cardDiv);
                 });
             } else {
                 noRecordsMessage.classList.remove('hidden');
+                cardsContainer.innerHTML = '';
             }
         }
         
         // 页面加载时显示历史记录
-        window.addEventListener('load', displaySharedMoodHistory);
+        window.addEventListener('load', displayMoodHistory);
     </script>
 </body>
 </html>
+
