@@ -1,0 +1,630 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心灵休憩空间</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8f9fa;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+        
+        .bg-gradient {
+            background: linear-gradient(135deg, #e6f7ff 0%, #f0fff4 50%, #faf5ff 100%);
+        }
+        
+        .card {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nature-img {
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .nature-img:hover {
+            transform: scale(1.02);
+        }
+        
+        .btn-primary {
+            background-color: #90cdf4;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #63b3ed;
+        }
+        
+        .mood-tracker {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+        }
+        
+        .mood-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .mood-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .quote {
+            font-style: italic;
+            color: #718096;
+            border-left: 4px solid #90cdf4;
+        }
+
+        .music-player {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .music-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .music-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .active-music {
+            background-color: #ebf8ff;
+            border-color: #63b3ed;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #63b3ed;
+            cursor: pointer;
+        }
+        
+        .mood-history-card {
+            transition: all 0.2s ease;
+        }
+        
+        .mood-history-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <!-- 欢迎标题 -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-light text-indigo-800 mb-4">心灵休憩空间</h1>
+            <p class="text-xl text-blue-600 font-light">在繁忙中找寻片刻宁静，让心灵得到舒展</p>
+        </header>
+
+        <!-- 主要内容 -->
+        <main>
+            <!-- 音乐放松功能 -->
+            <section class="mb-16">
+                <div class="music-player p-6">
+                    <h2 class="text-2xl text-teal-700 mb-4 text-center">轻音乐放松</h2>
+                    <p class="text-center mb-6">选择一段舒缓的音乐，让心灵沉浸在宁静之中</p>
+                    
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
+                        <div class="flex items-center space-x-4">
+                            <button id="playPauseBtn" class="music-btn p-3 rounded-full bg-blue-100 hover:bg-blue-200 focus:outline-none">
+                                <i class="fas fa-play text-blue-700"></i>
+                            </button>
+                            
+                            <div class="w-full md:w-40">
+                                <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="70">
+                            </div>
+                            
+                            <span id="volumeIcon" class="text-blue-700">
+                                <i class="fas fa-volume-up"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-2">
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/forest-sounds@main/gentle-forest-stream.mp3">
+                            <i class="fas fa-tree text-green-600 mr-2"></i> 森林溪流
+                        </button>
+                        
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/ocean-sounds@main/calm-ocean-waves.mp3">
+                            <i class="fas fa-water text-blue-600 mr-2"></i> 海浪声
+                        </button>
+                        
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/piano@main/gentle-piano.mp3">
+                            <i class="fas fa-music text-purple-600 mr-2"></i> 轻柔钢琴曲
+                        </button>
+                        
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/meditation@main/meditation-bowl.mp3">
+                            <i class="fas fa-spa text-yellow-600 mr-2"></i> 冥想音乐
+                        </button>
+                        
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/rain-sounds@main/gentle-rain.mp3">
+                            <i class="fas fa-cloud-rain text-blue-500 mr-2"></i> 雨声
+                        </button>
+                        
+                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/relaxing-music/birds@main/morning-birds.mp3">
+                            <i class="fas fa-dove text-indigo-600 mr-2"></i> 晨鸟鸣唱
+                        </button>
+                    </div>
+                    
+                    <p id="nowPlaying" class="text-center text-sm text-gray-500 mt-3 hidden">
+                        正在播放: <span id="currentTrack"></span>
+                    </p>
+                    
+                    <!-- 隐藏的音频元素 -->
+                    <audio id="audioPlayer"></audio>
+                </div>
+            </section>
+
+            <!-- 关于放松心情的内容 -->
+            <section class="mb-16">
+                <div class="card p-8 mb-12">
+                    <h2 class="text-2xl text-teal-700 mb-6">寻找内心的平静</h2>
+                    <p class="mb-4">在现代快节奏的生活中，我们的心灵常常被各种压力和焦虑所困扰。然而，真正的宁静并不需要远离尘嚣，它就藏在我们的内心深处，等待被唤醒。</p>
+                    <p class="mb-4">放松不仅仅是身体的休息，更是心灵的归位。当我们学会放慢脚步，感受呼吸，观察周围的美好，我们就能逐渐找回内心的平静。</p>
+                    
+                    <div class="quote pl-4 py-3 mt-6">
+                        "平静的心灵能看到最美的风景，安宁的灵魂能听到最动人的声音。"
+                    </div>
+                </div>
+
+                <!-- 自然风景图片 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="宁静森林" class="nature-img w-full h-64 object-cover">
+                        <p class="text-center mt-2 text-gray-600">宁静的森林小路</p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="平静湖泊" class="nature-img w-full h-64 object-cover">
+                        <p class="text-center mt-2 text-gray-600">平静如镜的湖面</p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="壮丽山脉" class="nature-img w-full h-64 object-cover">
+                        <p class="text-center mt-2 text-gray-600">壮丽而宁静的山脉</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 舒缓心灵的小贴士 -->
+            <section class="mb-16">
+                <h2 class="text-2xl text-teal-700 mb-8 text-center">舒缓心灵的小贴士</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="card p-6">
+                        <div class="text-blue-500 text-3xl mb-4 text-center">
+                            <i class="fas fa-lungs"></i>
+                        </div>
+                        <h3 class="text-xl text-indigo-700 mb-3">正念呼吸</h3>
+                        <p>找一个安静的地方坐下，闭上眼睛，专注于呼吸。感受空气进入鼻腔，充满肺部，再缓缓呼出。当杂念出现时，不要自责，只需将注意力重新拉回呼吸上。每天坚持5-10分钟，便能感受内心的平静。</p>
+                    </div>
+                    
+                    <div class="card p-6">
+                        <div class="text-green-500 text-3xl mb-4 text-center">
+                            <i class="fas fa-tree"></i>
+                        </div>
+                        <h3 class="text-xl text-indigo-700 mb-3">亲近自然</h3>
+                        <p>自然是最好的心灵疗愈师。安排时间去公园散步，或是远足山林。聆听鸟鸣，感受微风，观察植物的生长。大自然的节奏能帮助我们找回生命的本真，缓解内心的焦虑。</p>
+                    </div>
+                    
+                    <div class="card p-6">
+                        <div class="text-purple-500 text-3xl mb-4 text-center">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h3 class="text-xl text-indigo-700 mb-3">阅读疗愈</h3>
+                        <p>选择一本喜爱的书籍，找一个舒适的角落，沉浸在文字的世界中。阅读能让我们暂时远离现实的压力，进入另一个时空，获得心灵的宁静与滋养。</p>
+                    </div>
+                    
+                    <div class="card p-6">
+                        <div class="text-yellow-500 text-3xl mb-4 text-center">
+                            <i class="fas fa-walking"></i>
+                        </div>
+                        <h3 class="text-xl text-indigo-700 mb-3">动态冥想</h3>
+                        <p>在日常活动中保持专注，如走路时关注脚步与地面的接触，吃饭时专注食物的味道与口感。这种"活在当下"的状态能让心灵摆脱过去的遗憾与未来的担忧，获得真正的平静。</p>
+                    </div>
+                    
+                    <div class="card p-6">
+                        <div class="text-red-400 text-3xl mb-4 text-center">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 class="text-xl text-indigo-700 mb-3">培养感恩</h3>
+                        <p>每天记录三件感恩的事，无论大小。感恩能够改变我们看待生活的视角，使我们更容易发现生活中的美好，从而增加幸福感，减轻焦虑与压力。</p>
+                    </div>
+                    
+                    <div class="card p-6">
+                        <div class="text-blue-400 text-3xl mb-4 text-center">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <h3 class="text-xl text-indigo-700 mb-3">优质睡眠</h3>
+                        <p>保证充足的睡眠是缓解压力的基础。建立规律的作息时间，睡前一小时避免使用电子设备，创造舒适的睡眠环境。良好的睡眠能让身心得到真正的休息与恢复。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 互动区域：心情记录 -->
+            <section class="mb-16">
+                <div class="mood-tracker p-8">
+                    <h2 class="text-2xl text-teal-700 mb-6 text-center">分享您的心情</h2>
+                    <p class="text-center mb-6">记录当下的心情，与他人分享您的感受</p>
+                    
+                    <div class="mb-6">
+                        <label for="username" class="block mb-2 text-gray-700">您的名字 (可选):</label>
+                        <input type="text" id="username" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="留空则显示为"匿名用户"">
+                    </div>
+                    
+                    <div class="mood-selector flex flex-wrap justify-center gap-4 mb-8">
+                        <button class="mood-btn p-4 rounded-full bg-red-100 hover:bg-red-200 focus:outline-none" onclick="selectMood('joyful')">
+                            <span class="text-2xl">😊</span>
+                            <span class="block mt-1">愉悦</span>
+                        </button>
+                        <button class="mood-btn p-4 rounded-full bg-orange-100 hover:bg-orange-200 focus:outline-none" onclick="selectMood('calm')">
+                            <span class="text-2xl">😌</span>
+                            <span class="block mt-1">平静</span>
+                        </button>
+                        <button class="mood-btn p-4 rounded-full bg-yellow-100 hover:bg-yellow-200 focus:outline-none" onclick="selectMood('excited')">
+                            <span class="text-2xl">😃</span>
+                            <span class="block mt-1">兴奋</span>
+                        </button>
+                        <button class="mood-btn p-4 rounded-full bg-blue-100 hover:bg-blue-200 focus:outline-none" onclick="selectMood('tired')">
+                            <span class="text-2xl">😔</span>
+                            <span class="block mt-1">疲惫</span>
+                        </button>
+                        <button class="mood-btn p-4 rounded-full bg-purple-100 hover:bg-purple-200 focus:outline-none" onclick="selectMood('anxious')">
+                            <span class="text-2xl">😟</span>
+                            <span class="block mt-1">焦虑</span>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="moodNote" class="block mb-2 text-gray-700">记录一下您的感受:</label>
+                        <textarea id="moodNote" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="写下您的感受..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button id="saveMoodBtn" class="btn-primary px-6 py-2 rounded-lg text-white focus:outline-none">
+                            分享心情
+                        </button>
+                        <button id="clearPersonalBtn" class="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none">
+                            清除我的记录
+                        </button>
+                    </div>
+                    
+                    <div id="moodMessage" class="mt-4 text-center hidden"></div>
+                </div>
+            </section>
+
+            <!-- 共享历史记录区域 -->
+            <section class="mb-20">
+                <div class="card p-8">
+                    <h2 class="text-2xl text-teal-700 mb-6 text-center">心情共享墙</h2>
+                    <p class="text-center mb-6">在这里，我们彼此分享心情，互相给予温暖与理解</p>
+                    
+                    <div id="sharedMoodHistory" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <!-- 历史记录将在这里动态加载 -->
+                        <div class="text-center text-gray-500 col-span-full py-8" id="noRecordsMessage">
+                            暂无记录，成为第一个分享心情的人吧！
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 放松指南 -->
+            <section class="mb-20">
+                <div class="card p-8">
+                    <h2 class="text-2xl text-teal-700 mb-6">一分钟放松指南</h2>
+                    <p class="mb-4">当压力来袭时，这个简单的放松练习可以帮助你快速平静下来：</p>
+                    
+                    <ol class="list-decimal pl-6 space-y-3">
+                        <li>找一个舒适的姿势坐下，双脚平放在地上</li>
+                        <li>闭上眼睛，深吸一口气，数到4</li>
+                        <li>屏住呼吸，数到2</li>
+                        <li>缓缓呼气，数到6</li>
+                        <li>重复这个过程5次</li>
+                        <li>感受身体的放松，注意力放在当下</li>
+                    </ol>
+                    
+                    <p class="mt-4">这个简单的练习可以在任何地方进行，帮助你在忙碌的一天中找到片刻的平静。</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="text-center text-gray-500 mt-12 pt-4 border-t border-gray-200">
+            <p>心灵休憩空间 © 2023 - 愿你内心充满平静与阳光</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 音乐播放器功能
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const nowPlaying = document.getElementById('nowPlaying');
+        const currentTrack = document.getElementById('currentTrack');
+        const musicOptions = document.querySelectorAll('.music-option');
+        
+        let isPlaying = false;
+        let currentMusicBtn = null;
+        
+        // 初始化音量
+        audioPlayer.volume = volumeSlider.value / 100;
+        
+        // 播放/暂停按钮
+        playPauseBtn.addEventListener('click', function() {
+            if (!audioPlayer.src && musicOptions.length > 0) {
+                // 如果没有选中的音乐，默认播放第一首
+                const firstMusic = musicOptions[0];
+                audioPlayer.src = firstMusic.dataset.src;
+                currentTrack.textContent = firstMusic.textContent.trim();
+                currentMusicBtn = firstMusic;
+                firstMusic.classList.add('active-music');
+            }
+            
+            if (isPlaying) {
+                audioPlayer.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
+            } else {
+                audioPlayer.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause text-blue-700"></i>';
+            }
+            
+            isPlaying = !isPlaying;
+            nowPlaying.classList.remove('hidden');
+        });
+        
+        // 音量控制
+        volumeSlider.addEventListener('input', function() {
+            audioPlayer.volume = this.value / 100;
+            updateVolumeIcon();
+        });
+        
+        // 更新音量图标
+        function updateVolumeIcon() {
+            const volume = audioPlayer.volume;
+            
+            if (volume === 0) {
+                volumeIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else if (volume < 0.5) {
+                volumeIcon.innerHTML = '<i class="fas fa-volume-down"></i>';
+            } else {
+                volumeIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        }
+        
+        // 点击音乐选项
+        musicOptions.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除之前的选择状态
+                if (currentMusicBtn) {
+                    currentMusicBtn.classList.remove('active-music');
+                }
+                
+                // 添加新的选择状态
+                this.classList.add('active-music');
+                currentMusicBtn = this;
+                
+                // 设置音乐源
+                audioPlayer.src = this.dataset.src;
+                currentTrack.textContent = this.textContent.trim();
+                
+                // 播放音乐
+                audioPlayer.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause text-blue-700"></i>';
+                isPlaying = true;
+                
+                // 显示正在播放信息
+                nowPlaying.classList.remove('hidden');
+            });
+        });
+        
+        // 音乐结束时
+        audioPlayer.addEventListener('ended', function() {
+            isPlaying = false;
+            playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
+        });
+        
+        // 心情选择功能
+        let selectedMood = '';
+        
+        function selectMood(mood) {
+            selectedMood = mood;
+            
+            // 移除之前的选择状态
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-blue-500');
+            });
+            
+            // 添加新的选择状态
+            event.currentTarget.classList.add('ring-2', 'ring-blue-500');
+        }
+        
+        // 生成唯一ID
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+        
+        // 获取用户ID
+        function getUserId() {
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = generateUniqueId();
+                localStorage.setItem('userId', userId);
+            }
+            return userId;
+        }
+        
+        // 保存心情记录
+        document.getElementById('saveMoodBtn').addEventListener('click', function() {
+            const username = document.getElementById('username').value.trim() || '匿名用户';
+            const moodNote = document.getElementById('moodNote').value;
+            const messageDiv = document.getElementById('moodMessage');
+            
+            if (!selectedMood && !moodNote) {
+                messageDiv.textContent = "请选择心情或记录感受";
+                messageDiv.classList.remove('hidden', 'text-green-500');
+                messageDiv.classList.add('text-red-500');
+                messageDiv.classList.remove('hidden');
+                setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+                return;
+            }
+            
+            // 获取当前时间
+            const now = new Date();
+            const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            // 创建心情记录对象
+            const moodData = {
+                id: generateUniqueId(),
+                userId: getUserId(),
+                username: username,
+                mood: selectedMood,
+                note: moodNote,
+                date: formattedDate
+            };
+            
+            // 获取现有记录
+            let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+            moodHistory.unshift(moodData); // 添加到数组开头
+            
+            // 保存到本地存储
+            localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
+            
+            // 显示成功消息
+            messageDiv.textContent = "您的心情已分享";
+            messageDiv.classList.remove('hidden', 'text-red-500');
+            messageDiv.classList.add('text-green-500');
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+            
+            // 重置表单
+            selectedMood = '';
+            document.getElementById('moodNote').value = '';
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-blue-500');
+            });
+            
+            // 显示历史记录
+            displaySharedMoodHistory();
+        });
+        
+        // 清除个人记录
+        document.getElementById('clearPersonalBtn').addEventListener('click', function() {
+            const userId = getUserId();
+            let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+            
+            // 过滤出不是当前用户的记录
+            moodHistory = moodHistory.filter(entry => entry.userId !== userId);
+            
+            // 保存更新后的记录
+            localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
+            
+            // 显示消息
+            const messageDiv = document.getElementById('moodMessage');
+            messageDiv.textContent = "您的记录已清除";
+            messageDiv.classList.remove('hidden', 'text-red-500');
+            messageDiv.classList.add('text-green-500');
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+            
+            // 更新显示
+            displaySharedMoodHistory();
+        });
+        
+        // 显示共享历史记录
+        function displaySharedMoodHistory() {
+            const moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+            const historyContainer = document.getElementById('sharedMoodHistory');
+            const noRecordsMessage = document.getElementById('noRecordsMessage');
+            
+            if (moodHistory.length > 0) {
+                noRecordsMessage.classList.add('hidden');
+                historyContainer.innerHTML = '';
+                
+                moodHistory.forEach(entry => {
+                    let moodEmoji = '';
+                    let moodClass = '';
+                    
+                    switch(entry.mood) {
+                        case 'joyful': 
+                            moodEmoji = '😊'; 
+                            moodClass = 'bg-red-50 border-red-100';
+                            break;
+                        case 'calm': 
+                            moodEmoji = '😌'; 
+                            moodClass = 'bg-orange-50 border-orange-100';
+                            break;
+                        case 'excited': 
+                            moodEmoji = '😃'; 
+                            moodClass = 'bg-yellow-50 border-yellow-100';
+                            break;
+                        case 'tired': 
+                            moodEmoji = '😔'; 
+                            moodClass = 'bg-blue-50 border-blue-100';
+                            break;
+                        case 'anxious': 
+                            moodEmoji = '😟'; 
+                            moodClass = 'bg-purple-50 border-purple-100';
+                            break;
+                        default: 
+                            moodEmoji = '📝';
+                            moodClass = 'bg-gray-50 border-gray-100';
+                    }
+                    
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = `mood-history-card p-4 rounded-lg border ${moodClass}`;
+                    entryDiv.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <span class="text-xl mr-2">${moodEmoji}</span>
+                                <span class="font-medium">${entry.username}</span>
+                            </div>
+                            <span class="text-xs text-gray-500">${entry.date}</span>
+                        </div>
+                        ${entry.note ? `<p class="text-gray-700">${entry.note}</p>` : '<p class="text-gray-500 italic">无文字记录</p>'}
+                    `;
+                    
+                    // 标记当前用户的记录
+                    if (entry.userId === getUserId()) {
+                        entryDiv.classList.add('border-l-4', 'border-l-blue-400');
+                    }
+                    
+                    historyContainer.appendChild(entryDiv);
+                });
+            } else {
+                noRecordsMessage.classList.remove('hidden');
+            }
+        }
+        
+        // 页面加载时显示历史记录
+        window.addEventListener('load', displaySharedMoodHistory);
+    </script>
+</body>
+</html>
