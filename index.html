@@ -8,6 +8,25 @@
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+                /* 访问计数器样式 */
+        .visitor-counter {
+        animation: fadeIn 1.2s;
+        }
+
+        /* 重置消息样式 */
+        .reset-message {
+        animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+        }
+
+        #visitor-count {
+        font-weight: bold;
+        color: #0d9488;
+        }
         body {
             font-family: 'Noto Sans SC', sans-serif;
             background-color: #f8f9fa;
@@ -573,7 +592,33 @@
     </div>
 
     <!-- JavaScript -->
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script>
+        // 初始化Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDALyVsZQJ4p08ETPEb3TYdTDY6ExUAvVs",
+  authDomain: "relaxing-space.firebaseapp.com",
+  databaseURL: "https://relaxing-space-default-rtdb.firebaseio.com",
+  projectId: "relaxing-space",
+  storageBucket: "relaxing-space.firebasestorage.app", 
+  messagingSenderId: "193233637061",
+  appId: "1:193233637061:web:ad603a48e94eed0a1f2aac",
+  measurementId: "G-8PTKM54RQE"
+};
+
+// 初始化Firebase
+firebase.initializeApp(firebaseConfig);
+
+// 获取数据库引用和认证
+const database = firebase.database();
+const auth = firebase.auth();
+
+// 添加认证用户ID - 与您现有的变量共存
+let currentUserId = localStorage.getItem('userId');
+
         // 视觉放松效果功能
         const visualCanvas = document.getElementById('visualCanvas');
         const visualContainer = document.getElementById('visualContainer');
@@ -1293,9 +1338,247 @@
         
         // 页面加载时显示历史记录
         window.addEventListener('load', displayMoodHistory);
+        // Firebase功能 - 确保用户认证
+function ensureUserAuthenticated() {
+  return new Promise((resolve) => {
+    if (currentUserId) {
+      resolve(currentUserId);
+    } else {
+      auth.signInAnonymously()
+        .then((userCredential) => {
+          currentUserId = userCredential.user.uid;
+          localStorage.setItem('userId', currentUserId);
+          resolve(currentUserId);
+        })
+        .catch((error) => {
+          console.error("匿名登录失败:", error);
+          // 备用方案：使用现有的生成ID函数
+          currentUserId = generateUniqueId();
+          localStorage.setItem('userId', currentUserId);
+          resolve(currentUserId);
+        });
+    }
+  });
+}
+
+// 添加访问计数器显示
+function addVisitorCounter() {
+  // 在页面标题下方添加访问计数显示
+  const headerElement = document.querySelector('h1');
+  if (headerElement) {
+    // 检查是否已存在计数器
+    if (!document.getElementById('visitor-count')) {
+      const countElement = document.createElement('p');
+      countElement.className = 'visitor-counter text-center text-lg text-teal-600 -mt-4 mb-8 animate-fade-in';
+      countElement.innerHTML = '你是累计第<span id="visitor-count">...</span>个访问该空间的游客';
+      headerElement.insertAdjacentElement('afterend', countElement);
+    }
+    
+    // 更新访问计数
+    updateVisitorCount();
+  }
+}
+
+// Firebase功能 - 更新访问计数
+function updateVisitorCount() {
+  const visitorCountRef = database.ref('visitors/count');
+  
+  visitorCountRef.transaction((currentCount) => {
+    return (currentCount || 0) + 1;
+  }).then((result) => {
+    if (result.committed) {
+      const newCount = result.snapshot.val();
+      // 更新页面上的访问计数显示
+      const visitorCountElement = document.getElementById('visitor-count');
+      if (visitorCountElement) {
+        visitorCountElement.textContent = newCount;
+      }
+    }
+  }).catch((error) => {
+    console.error("访问计数更新失败:", error);
+  });
+}
+
+// Firebase功能 - 检查月度重置
+function checkMonthlyResetInfo() {
+  const resetInfoRef = database.ref('visitors/nextResetMessage');
+  const lastResetRef = database.ref('visitors/lastReset');
+  
+  // 获取当前日期
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  lastResetRef.once('value', (snapshot) => {
+    const lastResetDate = snapshot.val() || '';
+    
+    if (lastResetDate) {
+      const lastReset = new Date(lastResetDate);
+      
+      if (lastReset.getMonth() !== currentMonth || lastReset.getFullYear() !== currentYear) {
+        const visitorCountRef = database.ref('visitors/count');
+        visitorCountRef.once('value', (countSnapshot) => {
+          const count = countSnapshot.val() || 0;
+          
+          if (count <= 1) {
+            resetMonthlyData();
+          }
+        });
+      }
+    } else {
+      lastResetRef.set(now.toISOString().split('T')[0]);
+    }
+  });
+  
+  resetInfoRef.once('value', (snapshot) => {
+    const resetMessage = snapshot.val();
+    
+    if (!resetMessage) {
+      updateNextResetMessage();
+    } else {
+      displayResetMessage(resetMessage);
+    }
+  });
+}
+
+// 显示重置消息
+function displayResetMessage(message) {
+  let resetMessageEl = document.getElementById('reset-message');
+  
+  if (!resetMessageEl) {
+    resetMessageEl = document.createElement('div');
+    resetMessageEl.id = 'reset-message';
+    resetMessageEl.className = 'reset-message mt-6 text-center bg-amber-50 p-2 rounded-lg text-amber-800 border border-amber-200 max-w-xl mx-auto text-sm';
+    
+    const moodCardsSection = document.querySelector('#moodCardsContainer');
+    if (moodCardsSection && moodCardsSection.parentElement) {
+      moodCardsSection.parentElement.prepend(resetMessageEl);
+    }
+  }
+  
+  resetMessageEl.textContent = message;
+}
+
+// 更新下次重置消息
+function updateNextResetMessage() {
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const nextResetDate = nextMonth.toISOString().split('T')[0];
+  
+  const message = `数据将在${nextResetDate}重置`;
+  database.ref('visitors/nextResetMessage').set(message);
+  
+  displayResetMessage(message);
+}
+
+// 月度数据重置
+function resetMonthlyData() {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  
+  console.log("执行月度数据重置");
+  
+  database.ref('moods').once('value', (snapshot) => {
+    const moods = snapshot.val() || {};
+    database.ref('moods_backup/' + today.replace(/-/g, '')).set(moods)
+      .then(() => {
+        database.ref('moods').remove()
+          .then(() => {
+            console.log("已重置所有心情记录");
+            database.ref('visitors/lastReset').set(today);
+            updateNextResetMessage();
+          });
+      });
+  });
+}
+
+// 初始化Firebase功能 - 调用此函数启动Firebase功能
+function initializeFirebaseFeatures() {
+  // 确保用户已认证
+  ensureUserAuthenticated();
+  
+  // 添加访问计数器
+  addVisitorCounter();
+  
+  // 检查月度重置信息
+  checkMonthlyResetInfo();
+}
+// 初始化数据库结构
+function initializeDatabaseStructure() {
+  // 检查visitors节点
+  database.ref('visitors').once('value', (snapshot) => {
+    const visitors = snapshot.val();
+    
+    if (!visitors) {
+      // 如果不存在，创建初始结构
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const nextResetDate = nextMonth.toISOString().split('T')[0];
+      
+      database.ref('visitors').set({
+        count: 0,
+        lastReset: today,
+        nextResetMessage: `数据将在${nextResetDate}重置`
+      });
+    }
+  });
+  
+  // 确保moods节点存在
+  database.ref('moods').once('value', (snapshot) => {
+    if (!snapshot.exists()) {
+      database.ref('moods').set({});
+    }
+  });
+}
+
+// 在Firebase初始化后调用
+initializeDatabaseStructure();
+// 修改现有的saveMoodBtn点击事件 - 保存到Firebase
+const originalSaveBtnClick = document.getElementById('saveMoodBtn').onclick;
+document.getElementById('saveMoodBtn').onclick = function() {
+  const moodNote = document.getElementById('moodNote').value;
+  
+  if (!selectedMood && !moodNote) {
+    // 保留原有的验证逻辑
+    if (originalSaveBtnClick) {
+      originalSaveBtnClick.call(this);
+    }
+    return;
+  }
+  
+  // 保存到Firebase
+  ensureUserAuthenticated().then((userId) => {
+    // 创建一个新的心情记录
+    const newMoodRef = database.ref('moods').push();
+    
+    newMoodRef.set({
+      content: moodNote,
+      mood: selectedMood || 'neutral',
+      timestamp: Date.now(),
+      userId: userId,
+      avatar: selectedAvatar || 'anonymous'
+    }).then(() => {
+      // 触发原有的保存逻辑，更新UI
+      if (originalSaveBtnClick) {
+        originalSaveBtnClick.call(this);
+      }
+    }).catch((error) => {
+      console.error("保存心情失败:", error);
+      alert('保存失败，请稍后再试');
+    });
+  });
+};
+
+// 页面加载时初始化Firebase功能
+window.addEventListener('load', function() {
+  initializeFirebaseFeatures();
+});
     </script>
 </body>
 </html>
+
+
 
 
 
