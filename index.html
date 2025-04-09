@@ -95,6 +95,7 @@
             overflow: hidden;
             border-radius: 12px;
             background-color: #f0f7ff;
+            cursor: pointer;
         }
         
         #visualCanvas {
@@ -268,6 +269,55 @@
                 opacity: 0;
             }
         }
+        
+        /* 波纹动画效果 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-effect 1s linear;
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        @keyframes ripple-effect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* 头像选择样式 */
+        .avatar-selector {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .avatar-option {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f0f7ff;
+            font-size: 24px;
+            border: 2px solid transparent;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .avatar-selected {
+            border-color: #4299e1;
+            box-shadow: 0 0 8px rgba(66, 153, 225, 0.6);
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="bg-gradient min-h-screen">
@@ -305,12 +355,12 @@
                         </button>
                         
                         <button class="effect-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none" data-effect="leaves">
-                            <i class="fas fa-leaf text-green-600 mr-2"></i> 飘落的树叶
+                            <i class="fas fa-leaf text-green-600 mr-2"></i> 飘落的花瓣
                         </button>
                     </div>
                     
                     <p class="text-center text-sm text-gray-500 mt-3">
-                        提示：点击任意效果按钮开始或切换动画
+                        提示：点击任意效果按钮开始或切换动画，点击画面与动画互动
                     </p>
                 </div>
             </section>
@@ -404,6 +454,31 @@
                 <div class="mood-tracker p-8">
                     <h2 class="text-2xl text-teal-700 mb-6 text-center">分享您的心情</h2>
                     <p class="text-center mb-6">记录当下的心情，分享您的感受</p>
+                    
+                    <!-- 头像选择器 -->
+                    <div class="mb-6">
+                        <p class="text-center mb-3 text-gray-700">选择一个头像 (可选)</p>
+                        <div class="avatar-selector">
+                            <div class="avatar-option" data-avatar="anonymous">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="avatar-option" data-avatar="male1">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="avatar-option" data-avatar="female1">
+                                <i class="fas fa-female"></i>
+                            </div>
+                            <div class="avatar-option" data-avatar="neutral1">
+                                <i class="fas fa-user-astronaut"></i>
+                            </div>
+                            <div class="avatar-option" data-avatar="male2">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="avatar-option" data-avatar="female2">
+                                <i class="fas fa-user-nurse"></i>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="mood-selector flex flex-wrap justify-center gap-4 mb-8">
                         <button class="mood-btn p-4 rounded-full bg-red-100 hover:bg-red-200 focus:outline-none" onclick="selectMood('joyful')">
@@ -522,6 +597,122 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         
+        // 添加交互效果 - 点击事件
+        visualContainer.addEventListener('click', function(e) {
+            const rect = visualCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // 根据当前效果执行相应的交互
+            switch(currentEffect) {
+                case 'bubbles':
+                    createBubbleBurst(x, y);
+                    break;
+                case 'waves':
+                    createRippleEffect(x, y);
+                    break;
+                case 'breathing':
+                    changeBreathingColor();
+                    break;
+                case 'leaves':
+                    createLeafBurst(x, y);
+                    break;
+            }
+        });
+        
+        // 创建泡泡爆发效果
+        function createBubbleBurst(x, y) {
+            const burstCount = 15;
+            for (let i = 0; i < burstCount; i++) {
+                const size = Math.random() * 40 + 5;
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 50 + 20;
+                
+                particles.push({
+                    x: x + Math.cos(angle) * (Math.random() * 10),
+                    y: y + Math.sin(angle) * (Math.random() * 10),
+                    radius: size,
+                    speed: Math.random() * 2 + 1,
+                    color: getRandomPastelColor(),
+                    opacity: Math.random() * 0.8 + 0.2,
+                    delay: 0,
+                    dx: Math.cos(angle) * distance * 0.05,
+                    dy: Math.sin(angle) * distance * 0.05,
+                    life: 100,
+                    isBurst: true
+                });
+            }
+        }
+        
+        // 创建波纹效果
+        function createRippleEffect(x, y) {
+            const ripple = document.createElement('div');
+            ripple.classList.add('ripple');
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            visualContainer.appendChild(ripple);
+            
+            // 同时在波浪数组中添加一个特殊波浪
+            waves.push({
+                x: x,
+                y: y,
+                radius: 5,
+                maxRadius: visualCanvas.width * 0.5,
+                opacity: 0.7,
+                speed: 0.5,
+                isRipple: true
+            });
+            
+            // 移除动画结束后的元素
+            setTimeout(() => {
+                ripple.remove();
+            }, 1000);
+        }
+        
+        // 改变呼吸圆环颜色
+        function changeBreathingColor() {
+            const hue = Math.floor(Math.random() * 360);
+            const color = `hsl(${hue}, 70%, 80%)`;
+            const endColor = `hsl(${hue}, 90%, 95%)`;
+            
+            breathingCircle.style.background = `radial-gradient(circle, ${color} 0%, ${endColor} 70%)`;
+            
+            // 添加光晕效果
+            breathingCircle.style.boxShadow = `0 0 20px ${color}`;
+            
+            // 恢复原始样式
+            setTimeout(() => {
+                breathingCircle.style.boxShadow = '';
+            }, 1000);
+        }
+        
+        // 创建花瓣爆发效果
+        function createLeafBurst(x, y) {
+            const burstCount = 12;
+            const leafEmojis = ['🌸', '🌺', '🍃', '🌷', '🌹', '🥀', '🌻'];
+            
+            for (let i = 0; i < burstCount; i++) {
+                const size = Math.random() * 20 + 10;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 2 + 1;
+                
+                leaves.push({
+                    x: x,
+                    y: y,
+                    size: size,
+                    shape: leafEmojis[Math.floor(Math.random() * leafEmojis.length)],
+                    speed: speed,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 4 - 2,
+                    angle: angle,
+                    distance: Math.random() * 100 + 50,
+                    progress: 0,
+                    opacity: 1,
+                    isBurst: true
+                });
+            }
+        }
+        
         // 泡泡效果
         function createBubbles() {
             particles = [];
@@ -549,20 +740,36 @@
         function drawBubbles() {
             ctx.clearRect(0, 0, visualCanvas.width, visualCanvas.height);
             
+            // 绘制常规泡泡
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
                 
-                // 应用延迟
-                if (Date.now() % 10000 > p.delay) {
-                    p.y -= p.speed;
+                if (p.isBurst) {
+                    // 处理爆发泡泡
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    p.life -= 1;
+                    p.opacity = p.life / 100;
                     
-                    // 泡泡随机左右移动
-                    p.x += Math.sin(Date.now() / 1000 + i) * 0.5;
-                    
-                    // 如果泡泡飞出顶部，重新从底部开始
-                    if (p.y < -p.radius * 2) {
-                        p.y = visualCanvas.height + p.radius;
-                        p.x = Math.random() * visualCanvas.width;
+                    if (p.life <= 0) {
+                        particles.splice(i, 1);
+                        i--;
+                        continue;
+                    }
+                } else {
+                    // 处理常规泡泡
+                    // 应用延迟
+                    if (Date.now() % 10000 > p.delay) {
+                        p.y -= p.speed;
+                        
+                        // 泡泡随机左右移动
+                        p.x += Math.sin(Date.now() / 1000 + i) * 0.5;
+                        
+                        // 如果泡泡飞出顶部，重新从底部开始
+                        if (p.y < -p.radius * 2) {
+                            p.y = visualCanvas.height + p.radius;
+                            p.x = Math.random() * visualCanvas.width;
+                        }
                     }
                 }
                 
@@ -600,7 +807,7 @@
                 waves.push({
                     y: visualCanvas.height / 2,
                     amplitude: visualCanvas.height / 8,
-                    speed: 0.02 + i * 0.005,
+                    speed: 0.005 + i * 0.002, // 降低波浪速度
                     offset: i * Math.PI / 4,
                     color: i % 2 === 0 ? '#90cdf4' : '#63b3ed'
                 });
@@ -610,27 +817,48 @@
         function drawWaves() {
             ctx.clearRect(0, 0, visualCanvas.width, visualCanvas.height);
             
+            // 绘制标准波浪
             for (let i = 0; i < waves.length; i++) {
                 const wave = waves[i];
                 
-                ctx.beginPath();
-                ctx.moveTo(0, visualCanvas.height);
-                
-                for (let x = 0; x < visualCanvas.width; x += 10) {
-                    const y = wave.y + Math.sin(x * 0.01 + Date.now() * wave.speed + wave.offset) * wave.amplitude;
-                    ctx.lineTo(x, y);
+                if (wave.isRipple) {
+                    // 绘制点击产生的波纹
+                    ctx.beginPath();
+                    ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(99, 179, 237, ${wave.opacity})`;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // 更新波纹
+                    wave.radius += wave.speed * 10;
+                    wave.opacity -= 0.01;
+                    
+                    if (wave.opacity <= 0 || wave.radius >= wave.maxRadius) {
+                        waves.splice(i, 1);
+                        i--;
+                        continue;
+                    }
+                } else {
+                    // 绘制标准波浪
+                    ctx.beginPath();
+                    ctx.moveTo(0, visualCanvas.height);
+                    
+                    for (let x = 0; x < visualCanvas.width; x += 10) {
+                        const y = wave.y + Math.sin(x * 0.01 + Date.now() * wave.speed + wave.offset) * wave.amplitude;
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    ctx.lineTo(visualCanvas.width, visualCanvas.height);
+                    ctx.lineTo(0, visualCanvas.height);
+                    ctx.closePath();
+                    
+                    const gradient = ctx.createLinearGradient(0, 0, 0, visualCanvas.height);
+                    gradient.addColorStop(0, `${wave.color}33`); // 33 is 20% opacity in hex
+                    gradient.addColorStop(1, `${wave.color}00`); // 00 is 0% opacity in hex
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
                 }
-                
-                ctx.lineTo(visualCanvas.width, visualCanvas.height);
-                ctx.lineTo(0, visualCanvas.height);
-                ctx.closePath();
-                
-                const gradient = ctx.createLinearGradient(0, 0, 0, visualCanvas.height);
-                gradient.addColorStop(0, `${wave.color}33`); // 33 is 20% opacity in hex
-                gradient.addColorStop(1, `${wave.color}00`); // 00 is 0% opacity in hex
-                
-                ctx.fillStyle = gradient;
-                ctx.fill();
             }
             
             if (currentEffect === 'waves') {
@@ -642,9 +870,7 @@
         function createLeaves() {
             leaves = [];
             const leafCount = Math.floor(visualCanvas.width / 40);
-            const leafShapes = [
-                '🍂', '🍃', '🍁', '🌿', '🌱'
-            ];
+            const leafEmojis = ['🌸', '🌺', '🍃', '🌷', '🌹', '🥀', '🌻'];
             
             for (let i = 0; i < leafCount; i++) {
                 const size = Math.random() * 20 + 15;
@@ -652,7 +878,7 @@
                     x: Math.random() * visualCanvas.width,
                     y: -size * 2,
                     size: size,
-                    shape: leafShapes[Math.floor(Math.random() * leafShapes.length)],
+                    shape: leafEmojis[Math.floor(Math.random() * leafEmojis.length)],
                     speed: Math.random() * 1 + 0.5,
                     rotation: Math.random() * 360,
                     rotationSpeed: Math.random() * 2 - 1,
@@ -669,18 +895,35 @@
             for (let i = 0; i < leaves.length; i++) {
                 const leaf = leaves[i];
                 
-                // 应用延迟
-                if (Date.now() % 10000 > leaf.delay) {
-                    leaf.y += leaf.speed;
+                if (leaf.isBurst) {
+                    // 处理爆发出的花瓣
+                    leaf.progress += 0.01;
+                    const distance = leaf.progress * leaf.distance;
+                    leaf.x = leaf.x + Math.cos(leaf.angle) * 2;
+                    leaf.y = leaf.y + Math.sin(leaf.angle) * 2;
                     leaf.rotation += leaf.rotationSpeed;
+                    leaf.opacity = 1 - leaf.progress;
                     
-                    // 摇摆运动
-                    leaf.x += Math.sin(Date.now() / 1000 + leaf.swingOffset) / leaf.swingFactor;
-                    
-                    // 如果叶子飘出底部，重新从顶部开始
-                    if (leaf.y > visualCanvas.height + leaf.size) {
-                        leaf.y = -leaf.size * 2;
-                        leaf.x = Math.random() * visualCanvas.width;
+                    if (leaf.progress >= 1) {
+                        leaves.splice(i, 1);
+                        i--;
+                        continue;
+                    }
+                } else {
+                    // 处理正常飘落的花瓣
+                    // 应用延迟
+                    if (Date.now() % 10000 > leaf.delay) {
+                        leaf.y += leaf.speed;
+                        leaf.rotation += leaf.rotationSpeed;
+                        
+                        // 摇摆运动
+                        leaf.x += Math.sin(Date.now() / 1000 + leaf.swingOffset) / leaf.swingFactor;
+                        
+                        // 如果叶子飘出底部，重新从顶部开始
+                        if (leaf.y > visualCanvas.height + leaf.size) {
+                            leaf.y = -leaf.size * 2;
+                            leaf.x = Math.random() * visualCanvas.width;
+                        }
                     }
                 }
                 
@@ -691,6 +934,11 @@
                 ctx.font = `${leaf.size}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
+                
+                if (leaf.opacity !== undefined) {
+                    ctx.globalAlpha = leaf.opacity;
+                }
+                
                 ctx.fillText(leaf.shape, 0, 0);
                 ctx.restore();
             }
@@ -787,6 +1035,60 @@
             return userId;
         }
         
+        // 头像选择功能
+        let selectedAvatar = localStorage.getItem('userAvatar') || 'anonymous';
+        
+        // 初始化头像选择状态
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarOptions = document.querySelectorAll('.avatar-option');
+            
+            // 设置已保存的头像选择状态
+            avatarOptions.forEach(option => {
+                if (option.dataset.avatar === selectedAvatar) {
+                    option.classList.add('avatar-selected');
+                }
+                
+                // 添加点击事件
+                option.addEventListener('click', function() {
+                    // 移除之前的选择状态
+                    avatarOptions.forEach(opt => opt.classList.remove('avatar-selected'));
+                    
+                    // 添加新的选择状态
+                    this.classList.add('avatar-selected');
+                    
+                    // 保存选择
+                    selectedAvatar = this.dataset.avatar;
+                    localStorage.setItem('userAvatar', selectedAvatar);
+                });
+            });
+        });
+        
+        // 获取头像图标
+        function getAvatarIcon(avatar) {
+            switch(avatar) {
+                case 'male1': return '<i class="fas fa-user text-blue-500"></i>';
+                case 'female1': return '<i class="fas fa-female text-pink-500"></i>';
+                case 'neutral1': return '<i class="fas fa-user-astronaut text-purple-500"></i>';
+                case 'male2': return '<i class="fas fa-user-tie text-indigo-500"></i>';
+                case 'female2': return '<i class="fas fa-user-nurse text-red-500"></i>';
+                case 'anonymous':
+                default: return '<i class="fas fa-user-circle text-gray-500"></i>';
+            }
+        }
+        
+        // 获取头像名称
+        function getAvatarName(avatar) {
+            switch(avatar) {
+                case 'male1': return '蓝衣使者';
+                case 'female1': return '粉红精灵';
+                case 'neutral1': return '星际旅者';
+                case 'male2': return '绅士先生';
+                case 'female2': return '白衣天使';
+                case 'anonymous':
+                default: return '匿名用户';
+            }
+        }
+        
         // 保存心情记录
         document.getElementById('saveMoodBtn').addEventListener('click', function() {
             const moodNote = document.getElementById('moodNote').value;
@@ -811,7 +1113,8 @@
                 userId: getUserId(),
                 mood: selectedMood,
                 note: moodNote,
-                date: formattedDate
+                date: formattedDate,
+                avatar: selectedAvatar
             };
             
             // 获取现有记录
@@ -954,11 +1257,18 @@
                             <i class="fas fa-times"></i>
                         </button>` : '';
                     
+                    // 显示头像图标和名称
+                    const avatarIcon = getAvatarIcon(entry.avatar || 'anonymous');
+                    const avatarName = getAvatarName(entry.avatar || 'anonymous');
+                    
                     cardDiv.innerHTML = `
                         <div class="flex items-center justify-between mb-2">
                             <div class="flex items-center">
                                 <span class="text-xl mr-2">${moodEmoji}</span>
-                                <span class="font-medium">匿名用户</span>
+                                <div class="flex items-center">
+                                    <span class="mr-2">${avatarIcon}</span>
+                                    <span class="font-medium">${avatarName}</span>
+                                </div>
                             </div>
                             <div class="flex items-center">
                                 <span class="text-xs text-gray-500">${entry.date}</span>
@@ -986,5 +1296,6 @@
     </script>
 </body>
 </html>
+
 
 
