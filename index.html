@@ -68,43 +68,64 @@
             color: #718096;
             border-left: 4px solid #90cdf4;
         }
-
-        .music-player {
+        
+        .visual-effect-container {
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         }
         
-        .music-btn {
+        .effect-btn {
             transition: all 0.2s ease;
         }
         
-        .music-btn:hover {
+        .effect-btn:hover {
             transform: scale(1.05);
         }
         
-        .active-music {
+        .active-effect {
             background-color: #ebf8ff;
             border-color: #63b3ed;
         }
-
-        .volume-slider {
-            -webkit-appearance: none;
+        
+        .canvas-container {
+            position: relative;
             width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #e2e8f0;
+            height: 300px;
+            overflow: hidden;
+            border-radius: 12px;
+            background-color: #f0f7ff;
         }
         
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+        #visualCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .breathing-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
-            background: #63b3ed;
-            cursor: pointer;
+            background: radial-gradient(circle, #63b3ed 0%, #ebf8ff 70%);
+            opacity: 0.8;
+            animation: breathing 5s infinite ease-in-out;
         }
         
+        @keyframes breathing {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+        }
+
         .mood-history-card {
             transition: all 0.3s ease;
             margin-right: 15px;
@@ -157,38 +178,95 @@
             animation: fadeIn 0.5s ease-out;
         }
         
-        .music-visual {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 60px;
-            margin: 10px 0;
-        }
-        
-        .music-bar {
-            width: 4px;
-            height: 20px;
-            background: #63b3ed;
-            margin: 0 2px;
-            border-radius: 2px;
-            animation: sound 0ms -800ms linear infinite alternate;
-        }
-        
-        @keyframes sound {
-            0% {
-                height: 5px;
-            }
-            100% {
-                height: 40px;
-            }
-        }
-        
         .delete-btn {
             transition: all 0.2s ease;
         }
         
         .delete-btn:hover {
             color: #f56565;
+        }
+
+        /* 泡泡动画样式 */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.1));
+            box-shadow: 0 0 8px rgba(120, 180, 255, 0.3);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100%) scale(0.8);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* 波浪动画样式 */
+        .wave {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, #63b3ed, #90cdf4, #63b3ed);
+            opacity: 0.3;
+            border-radius: 50%;
+            transform-origin: 50% 50%;
+            animation: wave 8s linear infinite;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: scale(0.1, 0.1);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.5;
+            }
+            80% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(3, 0.1);
+                opacity: 0;
+            }
+        }
+
+        /* 飘落树叶样式 */
+        .leaf {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.8;
+            animation: falling 10s ease-in-out infinite;
+        }
+
+        @keyframes falling {
+            0% {
+                transform: translateY(-5%) translateX(10%) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(105%) translateX(-10%) rotate(360deg);
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -202,93 +280,38 @@
 
         <!-- 主要内容 -->
         <main>
-            <!-- 音乐放松功能 -->
+            <!-- 动态放松视觉效果区域 -->
             <section class="mb-16">
-                <div class="music-player p-6">
-                    <h2 class="text-2xl text-teal-700 mb-4 text-center">轻音乐放松</h2>
-                    <p class="text-center mb-6">选择一段舒缓的音乐，让心灵沉浸在宁静之中</p>
+                <div class="visual-effect-container p-6">
+                    <h2 class="text-2xl text-teal-700 mb-4 text-center">视觉放松空间</h2>
+                    <p class="text-center mb-6">选择一种视觉效果，让眼睛和心灵一同放松</p>
                     
-                    <div class="music-visual" id="musicVisual">
-                        <div class="music-bar" style="animation-duration: 474ms;"></div>
-                        <div class="music-bar" style="animation-duration: 433ms;"></div>
-                        <div class="music-bar" style="animation-duration: 407ms;"></div>
-                        <div class="music-bar" style="animation-duration: 458ms;"></div>
-                        <div class="music-bar" style="animation-duration: 400ms;"></div>
-                        <div class="music-bar" style="animation-duration: 427ms;"></div>
-                        <div class="music-bar" style="animation-duration: 441ms;"></div>
-                        <div class="music-bar" style="animation-duration: 419ms;"></div>
-                        <div class="music-bar" style="animation-duration: 487ms;"></div>
+                    <div class="canvas-container mb-6" id="visualContainer">
+                        <canvas id="visualCanvas"></canvas>
+                        <div id="breathingCircle" class="breathing-circle" style="display: none;"></div>
                     </div>
                     
-                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
-                        <div class="flex items-center space-x-4">
-                            <button id="playPauseBtn" class="music-btn p-3 rounded-full bg-blue-100 hover:bg-blue-200 focus:outline-none">
-                                <i class="fas fa-play text-blue-700"></i>
-                            </button>
-                            
-                            <div class="w-full md:w-40">
-                                <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="70">
-                            </div>
-                            
-                            <span id="volumeIcon" class="text-blue-700">
-                                <i class="fas fa-volume-up"></i>
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-2">
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/rain-forest.mp3">
-                            <i class="fas fa-tree text-green-600 mr-2"></i> 森林溪流
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+                        <button class="effect-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none" data-effect="bubbles">
+                            <i class="fas fa-circle text-blue-500 mr-2"></i> 彩色泡泡
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/ocean-waves.mp3">
-                            <i class="fas fa-water text-blue-600 mr-2"></i> 海浪声
+                        <button class="effect-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none" data-effect="waves">
+                            <i class="fas fa-water text-blue-600 mr-2"></i> 波浪流动
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/meditation-piano.mp3">
-                            <i class="fas fa-music text-purple-600 mr-2"></i> 轻柔钢琴曲
+                        <button class="effect-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none" data-effect="breathing">
+                            <i class="fas fa-lungs text-purple-600 mr-2"></i> 呼吸引导
                         </button>
                         
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/meditation-bells.mp3">
-                            <i class="fas fa-spa text-yellow-600 mr-2"></i> 冥想音乐
-                        </button>
-                        
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/rain-ambience.mp3">
-                            <i class="fas fa-cloud-rain text-blue-500 mr-2"></i> 雨声
-                        </button>
-                        
-                        <button class="music-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none music-option" data-src="https://cdn.jsdelivr.net/gh/soundscrate/sounds/birds-chirping.mp3">
-                            <i class="fas fa-dove text-indigo-600 mr-2"></i> 晨鸟鸣唱
+                        <button class="effect-btn p-3 border rounded-lg text-left text-gray-700 hover:bg-blue-50 focus:outline-none" data-effect="leaves">
+                            <i class="fas fa-leaf text-green-600 mr-2"></i> 飘落的树叶
                         </button>
                     </div>
                     
-                    <p id="nowPlaying" class="text-center text-sm text-gray-500 mt-3 hidden">
-                        正在播放: <span id="currentTrack"></span>
+                    <p class="text-center text-sm text-gray-500 mt-3">
+                        提示：点击任意效果按钮开始或切换动画
                     </p>
-                    
-                    <!-- 备用音频播放器 -->
-                    <div class="mt-6">
-                        <h3 class="text-center text-gray-600 mb-3">或者直接使用以下音频播放器</h3>
-                        <audio controls class="w-full" controlsList="nodownload">
-                            <source src="https://cdn.jsdelivr.net/gh/relaxedland/audio/forest-stream.mp3" type="audio/mpeg">
-                            您的浏览器不支持音频播放。
-                        </audio>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
-                            <select id="directAudioSelector" class="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
-                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/forest-stream.mp3">森林溪流</option>
-                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/ocean-waves.mp3">海浪声</option>
-                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/piano-meditation.mp3">钢琴冥想</option>
-                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/soft-rain.mp3">柔和雨声</option>
-                                <option value="https://cdn.jsdelivr.net/gh/relaxedland/audio/birds-morning.mp3">晨鸟歌唱</option>
-                            </select>
-                            <button id="applyAudioSelection" class="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 focus:outline-none">
-                                应用选择
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- 隐藏的音频元素 -->
-                    <audio id="audioPlayer"></audio>
                 </div>
             </section>
 
@@ -476,151 +499,263 @@
 
     <!-- JavaScript -->
     <script>
-        // 音乐播放器功能
-        const audioPlayer = document.getElementById('audioPlayer');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeIcon = document.getElementById('volumeIcon');
-        const nowPlaying = document.getElementById('nowPlaying');
-        const currentTrack = document.getElementById('currentTrack');
-        const musicOptions = document.querySelectorAll('.music-option');
-        const musicVisual = document.getElementById('musicVisual');
-        const musicBars = document.querySelectorAll('.music-bar');
-        const directAudioSelector = document.getElementById('directAudioSelector');
-        const applyAudioSelection = document.getElementById('applyAudioSelection');
+        // 视觉放松效果功能
+        const visualCanvas = document.getElementById('visualCanvas');
+        const visualContainer = document.getElementById('visualContainer');
+        const ctx = visualCanvas.getContext('2d');
+        const effectBtns = document.querySelectorAll('.effect-btn');
+        const breathingCircle = document.getElementById('breathingCircle');
         
-        let isPlaying = false;
-        let currentMusicBtn = null;
+        let currentEffect = '';
+        let currentEffectBtn = null;
+        let animationFrameId = null;
+        let particles = [];
+        let waves = [];
+        let leaves = [];
         
-        // 初始化音量
-        audioPlayer.volume = volumeSlider.value / 100;
+        // 设置画布大小
+        function resizeCanvas() {
+            visualCanvas.width = visualContainer.clientWidth;
+            visualCanvas.height = visualContainer.clientHeight;
+        }
         
-        // 隐藏音乐可视化
-        musicVisual.style.display = 'none';
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
         
-        // 应用直接音频选择
-        applyAudioSelection.addEventListener('click', function() {
-            const selectedAudio = directAudioSelector.value;
-            const audioElement = document.querySelector('audio[controls]');
-            audioElement.src = selectedAudio;
-            audioElement.load();
-            audioElement.play();
-        });
-        
-        // 播放/暂停按钮
-        playPauseBtn.addEventListener('click', function() {
-            if (!audioPlayer.src && musicOptions.length > 0) {
-                // 如果没有选中的音乐，默认播放第一首
-                const firstMusic = musicOptions[0];
-                audioPlayer.src = firstMusic.dataset.src;
-                currentTrack.textContent = firstMusic.textContent.trim();
-                currentMusicBtn = firstMusic;
-                firstMusic.classList.add('active-music');
-            }
+        // 泡泡效果
+        function createBubbles() {
+            particles = [];
+            const bubbleCount = Math.floor(visualCanvas.width / 30);
             
-            if (isPlaying) {
-                audioPlayer.pause();
-                playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
-                musicVisual.style.display = 'none';
-            } else {
-                audioPlayer.play().catch(error => {
-                    console.log("播放失败，可能是浏览器政策限制或音频源不可用:", error);
-                    displayErrorMessage("音频播放失败，请尝试其他音乐或使用直接播放器");
+            for (let i = 0; i < bubbleCount; i++) {
+                const size = Math.random() * 50 + 10;
+                particles.push({
+                    x: Math.random() * visualCanvas.width,
+                    y: visualCanvas.height + size,
+                    radius: size,
+                    speed: Math.random() * 2 + 0.5,
+                    color: getRandomPastelColor(),
+                    opacity: Math.random() * 0.6 + 0.2,
+                    delay: Math.random() * 5000
                 });
-                playPauseBtn.innerHTML = '<i class="fas fa-pause text-blue-700"></i>';
-                musicVisual.style.display = 'flex';
-            }
-            
-            isPlaying = !isPlaying;
-            nowPlaying.classList.remove('hidden');
-        });
-        
-        // 音量控制
-        volumeSlider.addEventListener('input', function() {
-            audioPlayer.volume = this.value / 100;
-            updateVolumeIcon();
-        });
-        
-        // 更新音量图标
-        function updateVolumeIcon() {
-            const volume = audioPlayer.volume;
-            
-            if (volume === 0) {
-                volumeIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
-            } else if (volume < 0.5) {
-                volumeIcon.innerHTML = '<i class="fas fa-volume-down"></i>';
-            } else {
-                volumeIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
             }
         }
         
-        // 点击音乐选项
-        musicOptions.forEach(btn => {
+        function getRandomPastelColor() {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsla(${hue}, 70%, 80%, 0.6)`;
+        }
+        
+        function drawBubbles() {
+            ctx.clearRect(0, 0, visualCanvas.width, visualCanvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                
+                // 应用延迟
+                if (Date.now() % 10000 > p.delay) {
+                    p.y -= p.speed;
+                    
+                    // 泡泡随机左右移动
+                    p.x += Math.sin(Date.now() / 1000 + i) * 0.5;
+                    
+                    // 如果泡泡飞出顶部，重新从底部开始
+                    if (p.y < -p.radius * 2) {
+                        p.y = visualCanvas.height + p.radius;
+                        p.x = Math.random() * visualCanvas.width;
+                    }
+                }
+                
+                // 绘制泡泡
+                ctx.beginPath();
+                const gradient = ctx.createRadialGradient(
+                    p.x, p.y, 0,
+                    p.x, p.y, p.radius
+                );
+                gradient.addColorStop(0, `hsla(${p.color.split(',')[0].split('(')[1]}, 70%, 90%, ${p.opacity})`);
+                gradient.addColorStop(1, p.color);
+                
+                ctx.fillStyle = gradient;
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 添加高光
+                ctx.beginPath();
+                ctx.arc(p.x - p.radius * 0.3, p.y - p.radius * 0.3, p.radius * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                ctx.fill();
+            }
+            
+            if (currentEffect === 'bubbles') {
+                animationFrameId = requestAnimationFrame(drawBubbles);
+            }
+        }
+        
+        // 波浪效果
+        function createWaves() {
+            waves = [];
+            const waveCount = 7;
+            
+            for (let i = 0; i < waveCount; i++) {
+                waves.push({
+                    y: visualCanvas.height / 2,
+                    amplitude: visualCanvas.height / 8,
+                    speed: 0.02 + i * 0.005,
+                    offset: i * Math.PI / 4,
+                    color: i % 2 === 0 ? '#90cdf4' : '#63b3ed'
+                });
+            }
+        }
+        
+        function drawWaves() {
+            ctx.clearRect(0, 0, visualCanvas.width, visualCanvas.height);
+            
+            for (let i = 0; i < waves.length; i++) {
+                const wave = waves[i];
+                
+                ctx.beginPath();
+                ctx.moveTo(0, visualCanvas.height);
+                
+                for (let x = 0; x < visualCanvas.width; x += 10) {
+                    const y = wave.y + Math.sin(x * 0.01 + Date.now() * wave.speed + wave.offset) * wave.amplitude;
+                    ctx.lineTo(x, y);
+                }
+                
+                ctx.lineTo(visualCanvas.width, visualCanvas.height);
+                ctx.lineTo(0, visualCanvas.height);
+                ctx.closePath();
+                
+                const gradient = ctx.createLinearGradient(0, 0, 0, visualCanvas.height);
+                gradient.addColorStop(0, `${wave.color}33`); // 33 is 20% opacity in hex
+                gradient.addColorStop(1, `${wave.color}00`); // 00 is 0% opacity in hex
+                
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
+            
+            if (currentEffect === 'waves') {
+                animationFrameId = requestAnimationFrame(drawWaves);
+            }
+        }
+        
+        // 飘落的树叶效果
+        function createLeaves() {
+            leaves = [];
+            const leafCount = Math.floor(visualCanvas.width / 40);
+            const leafShapes = [
+                '🍂', '🍃', '🍁', '🌿', '🌱'
+            ];
+            
+            for (let i = 0; i < leafCount; i++) {
+                const size = Math.random() * 20 + 15;
+                leaves.push({
+                    x: Math.random() * visualCanvas.width,
+                    y: -size * 2,
+                    size: size,
+                    shape: leafShapes[Math.floor(Math.random() * leafShapes.length)],
+                    speed: Math.random() * 1 + 0.5,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 2 - 1,
+                    swingFactor: Math.random() * 5 + 3,
+                    swingOffset: Math.random() * Math.PI * 2,
+                    delay: Math.random() * 5000
+                });
+            }
+        }
+        
+        function drawLeaves() {
+            ctx.clearRect(0, 0, visualCanvas.width, visualCanvas.height);
+            
+            for (let i = 0; i < leaves.length; i++) {
+                const leaf = leaves[i];
+                
+                // 应用延迟
+                if (Date.now() % 10000 > leaf.delay) {
+                    leaf.y += leaf.speed;
+                    leaf.rotation += leaf.rotationSpeed;
+                    
+                    // 摇摆运动
+                    leaf.x += Math.sin(Date.now() / 1000 + leaf.swingOffset) / leaf.swingFactor;
+                    
+                    // 如果叶子飘出底部，重新从顶部开始
+                    if (leaf.y > visualCanvas.height + leaf.size) {
+                        leaf.y = -leaf.size * 2;
+                        leaf.x = Math.random() * visualCanvas.width;
+                    }
+                }
+                
+                // 绘制叶子
+                ctx.save();
+                ctx.translate(leaf.x, leaf.y);
+                ctx.rotate(leaf.rotation * Math.PI / 180);
+                ctx.font = `${leaf.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(leaf.shape, 0, 0);
+                ctx.restore();
+            }
+            
+            if (currentEffect === 'leaves') {
+                animationFrameId = requestAnimationFrame(drawLeaves);
+            }
+        }
+        
+        // 呼吸引导效果
+        function startBreathingEffect() {
+            breathingCircle.style.display = 'block';
+            visualCanvas.style.display = 'none';
+        }
+        
+        function stopBreathingEffect() {
+            breathingCircle.style.display = 'none';
+            visualCanvas.style.display = 'block';
+        }
+        
+        // 处理效果按钮点击
+        effectBtns.forEach(btn => {
             btn.addEventListener('click', function() {
+                // 停止当前动画
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                
                 // 移除之前的选择状态
-                if (currentMusicBtn) {
-                    currentMusicBtn.classList.remove('active-music');
+                if (currentEffectBtn) {
+                    currentEffectBtn.classList.remove('active-effect');
                 }
                 
                 // 添加新的选择状态
-                this.classList.add('active-music');
-                currentMusicBtn = this;
+                this.classList.add('active-effect');
+                currentEffectBtn = this;
+                currentEffect = this.dataset.effect;
                 
-                // 设置音乐源
-                audioPlayer.src = this.dataset.src;
-                currentTrack.textContent = this.textContent.trim();
+                // 隐藏呼吸圆圈(如果正在显示)
+                stopBreathingEffect();
                 
-                // 播放音乐
-                audioPlayer.play().catch(error => {
-                    console.log("播放失败，可能是浏览器政策限制或音频源不可用:", error);
-                    displayErrorMessage("音频播放失败，请尝试其他音乐或使用直接播放器");
-                });
-                playPauseBtn.innerHTML = '<i class="fas fa-pause text-blue-700"></i>';
-                isPlaying = true;
-                
-                // 显示正在播放信息和可视化效果
-                nowPlaying.classList.remove('hidden');
-                musicVisual.style.display = 'flex';
+                // 启动相应的效果
+                switch (currentEffect) {
+                    case 'bubbles':
+                        createBubbles();
+                        drawBubbles();
+                        break;
+                    case 'waves':
+                        createWaves();
+                        drawWaves();
+                        break;
+                    case 'breathing':
+                        startBreathingEffect();
+                        break;
+                    case 'leaves':
+                        createLeaves();
+                        drawLeaves();
+                        break;
+                }
             });
         });
         
-        // 音乐结束时
-        audioPlayer.addEventListener('ended', function() {
-            isPlaying = false;
-            playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
-            musicVisual.style.display = 'none';
-        });
-        
-        // 音乐播放错误时
-        audioPlayer.addEventListener('error', function() {
-            isPlaying = false;
-            playPauseBtn.innerHTML = '<i class="fas fa-play text-blue-700"></i>';
-            musicVisual.style.display = 'none';
-            displayErrorMessage("音频文件加载失败，请尝试其他音乐或使用直接播放器");
-        });
-        
-        // 显示错误信息
-        function displayErrorMessage(message) {
-            const messageDiv = document.getElementById('moodMessage');
-            messageDiv.textContent = message;
-            messageDiv.classList.remove('hidden', 'text-green-500');
-            messageDiv.classList.add('text-red-500');
-            messageDiv.classList.remove('hidden');
-            setTimeout(() => messageDiv.classList.add('hidden'), 5000);
-        }
-        
-        // 更新音乐可视化效果
-        function updateMusicVisuals() {
-            if (isPlaying) {
-                musicBars.forEach(bar => {
-                    const height = Math.floor(Math.random() * 35) + 5;
-                    bar.style.height = `${height}px`;
-                });
-            }
-        }
-        
-        // 定期更新音乐可视化
-        setInterval(updateMusicVisuals, 300);
+        // 默认选择泡泡效果
+        document.querySelector('[data-effect="bubbles"]').click();
         
         // 心情选择功能
         let selectedMood = '';
@@ -851,4 +986,5 @@
     </script>
 </body>
 </html>
+
 
