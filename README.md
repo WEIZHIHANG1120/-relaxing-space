@@ -1,2 +1,13 @@
-# AI做的放松的小网站，目前包含音乐、鸡汤、TIPS
-链接在此处👉https://weizhihang1120.github.io/-relaxing-space/
+# 🧘 心灵休憩空间 | Mindful Haven
+
+🌌 ​**​数字时代的心灵绿洲​**​ | 由 Genspark 和我共同创建的在线放松平台
+
+[![即刻体验](https://img.shields.io/badge/立即访问-在线Demo-00b4d8?style=for-the-badge)](https://weizhihang1120.github.io/-relaxing-space/)
+
+## ✨ 核心功能
+
+### 🎨 沉浸式放松体验
+- ​**​动态冥想动画​**​：可交互的粒子流体效果，支持手势操控光影流动  
+- ​**​正念呼吸引导​**​：配合可视化呼吸波纹的智能节奏提醒  
+- ​**​心灵鸡汤工坊​**​：AI生成的温暖语录 + 用户共创的治愈文字云  
+- ​**​数字记忆墙贴​**​：支持拖拽创建心情卡片，自动生成诗意排版
