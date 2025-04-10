@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -597,7 +598,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script>
-        // 初始化Firebase
+
+// Firebase初始化 - 放在您现有代码的上部
 const firebaseConfig = {
   apiKey: "AIzaSyDALyVsZQJ4p08ETPEb3TYdTDY6ExUAvVs",
   authDomain: "relaxing-space.firebaseapp.com",
@@ -609,12 +611,183 @@ const firebaseConfig = {
   measurementId: "G-8PTKM54RQE"
 };
 
-// 初始化Firebase
-firebase.initializeApp(firebaseConfig);
+// 初始化Firebase - 确保只初始化一次
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
-// 获取数据库引用和认证
+// 获取数据库引用
 const database = firebase.database();
 const auth = firebase.auth();
+
+// 用户认证工具函数
+function ensureUserAuthenticated() {
+  return new Promise((resolve, reject) => {
+    let userId = localStorage.getItem('userId');
+    
+    if (userId) {
+      resolve(userId);
+    } else {
+      userId = 'user_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('userId', userId);
+      resolve(userId);
+    }
+  });
+}
+
+// 简单测试函数 - 检查Firebase是否正确连接
+function testFirebaseConnection() {
+  // 测试写入
+  database.ref('test_connection').set({
+    timestamp: Date.now(),
+    message: "连接测试"
+  })
+  .then(() => console.log("Firebase连接成功!"))
+  .catch(error => console.error("Firebase连接失败:", error));
+  
+  // 测试读取
+  database.ref('visitors/count').once('value')
+    .then(snapshot => console.log("当前访问计数:", snapshot.val()))
+    .catch(error => console.error("读取计数失败:", error));
+}
+
+// 保存按钮事件处理 - 请替换现有的任何事件处理
+function setupMoodSaveButton() {
+  const saveButton = document.getElementById('saveMoodBtn');
+  
+  if (saveButton) {
+    // 移除可能存在的所有事件监听器
+    const newButton = saveButton.cloneNode(true);
+    saveButton.parentNode.replaceChild(newButton, saveButton);
+    
+    // 添加新的事件监听器
+    newButton.addEventListener('click', function() {
+  const moodNote = document.getElementById('moodNote').value.trim();
+  const messageDiv = document.getElementById('moodMessage');
+  
+  if (!selectedMood) {
+    messageDiv.textContent = "请先选择一个心情后再记录";
+    messageDiv.classList.remove('hidden', 'text-green-500');
+    messageDiv.classList.add('text-red-500');
+    messageDiv.classList.remove('hidden');
+    setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+    return;
+  }
+  
+  // 确保用户已认证
+  ensureUserAuthenticated().then((userId) => {
+    // 直接使用Firebase引用
+    const newMoodRef = firebase.database().ref('moods').push();
+    
+    // 当前时间格式化
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    
+    // 创建唯一ID - 确保本地存储和Firebase使用相同的ID
+    const recordId = newMoodRef.key;
+    
+    // 创建数据对象
+    const moodData = {
+      content: moodNote,
+      mood: selectedMood,  // 确保这里有值
+      timestamp: Date.now(),
+      userId: userId,
+      avatar: selectedAvatar || 'anonymous',
+      date: formattedDate
+    };
+    
+    // 保存到Firebase
+    newMoodRef.set(moodData)
+      .then(() => {
+        console.log("记录已保存到Firebase:", recordId);
+        
+        // 显示成功消息
+        messageDiv.textContent = "记录已保存到云端!";
+        messageDiv.classList.remove('hidden', 'text-red-500');
+        messageDiv.classList.add('text-green-500');
+        messageDiv.classList.remove('hidden');
+        setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+        
+        // 重置表单
+        selectedMood = '';
+        document.getElementById('moodNote').value = '';
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+          btn.classList.remove('ring-2', 'ring-blue-500');
+        });
+        
+        // 保存到本地存储 - 使用相同的ID
+        let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+        
+        // 检查是否已存在相同ID的记录，如果有则移除
+        moodHistory = moodHistory.filter(entry => entry.id !== recordId);
+        
+        // 添加新记录
+        const localMoodData = {
+          id: recordId,
+          userId: userId,
+          mood: selectedMood,
+          note: moodNote,
+          date: formattedDate,
+          avatar: selectedAvatar || 'anonymous',
+          source: 'firebase',  // 标记来源为firebase
+          timestamp: moodData.timestamp
+        };
+        moodHistory.unshift(localMoodData);
+        localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
+        
+        // 重要: 手动更新显示而不是依赖Firebase监听器
+        displayMoodHistory();
+      })
+      .catch((error) => {
+        console.error("保存到Firebase失败:", error);
+        // 显示错误消息
+        messageDiv.textContent = "保存失败: " + error.message;
+        messageDiv.classList.remove('hidden', 'text-green-500');
+        messageDiv.classList.add('text-red-500');
+        messageDiv.classList.remove('hidden');
+        setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+      });
+  }).catch(error => {
+    console.error("用户认证失败:", error);
+  });
+});
+  } else {
+    console.error("找不到保存按钮元素!");
+  }
+}
+
+// 初始化函数 - 在页面加载完成后调用
+window.addEventListener('DOMContentLoaded', function() {
+  console.log("页面加载完成，开始初始化Firebase功能");
+  
+  // 测试Firebase连接
+  testFirebaseConnection();
+  
+  // 设置保存按钮
+  setupMoodSaveButton();
+  
+  // 添加访问计数器
+  const headerElement = document.querySelector('h1');
+  if (headerElement) {
+    if (!document.getElementById('visitor-count')) {
+      const countElement = document.createElement('p');
+      countElement.className = 'visitor-counter text-center text-lg text-teal-600 -mt-4 mb-8';
+      countElement.innerHTML = '你是累计第<span id="visitor-count">...</span>个访问该空间的游客';
+      headerElement.insertAdjacentElement('afterend', countElement);
+    }
+    
+    // 增加访问计数
+    database.ref('visitors/count').once('value').then(snapshot => {
+      let count = (snapshot.val() || 0) + 1;
+      database.ref('visitors/count').set(count).then(() => {
+        const countElement = document.getElementById('visitor-count');
+        if (countElement) {
+          countElement.textContent = count;
+        }
+      });
+    });
+  }
+});
 
 // 添加认证用户ID - 与您现有的变量共存
 let currentUserId = localStorage.getItem('userId');
@@ -1134,109 +1307,159 @@ let currentUserId = localStorage.getItem('userId');
             }
         }
         
-        // 保存心情记录
-        document.getElementById('saveMoodBtn').addEventListener('click', function() {
-            const moodNote = document.getElementById('moodNote').value;
-            const messageDiv = document.getElementById('moodMessage');
-            
-            if (!selectedMood && !moodNote) {
-                messageDiv.textContent = "请选择心情或记录感受";
-                messageDiv.classList.remove('hidden', 'text-green-500');
-                messageDiv.classList.add('text-red-500');
-                messageDiv.classList.remove('hidden');
-                setTimeout(() => messageDiv.classList.add('hidden'), 3000);
-                return;
-            }
-            
-            // 获取当前时间
-            const now = new Date();
-            const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            
-            // 创建心情记录对象
-            const moodData = {
-                id: generateUniqueId(),
-                userId: getUserId(),
-                mood: selectedMood,
-                note: moodNote,
-                date: formattedDate,
-                avatar: selectedAvatar
-            };
-            
-            // 获取现有记录
-            let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
-            moodHistory.unshift(moodData); // 添加到数组开头
-            
-            // 保存到本地存储
-            localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
-            
-            // 显示成功消息
-            messageDiv.textContent = "您的心情已记录";
-            messageDiv.classList.remove('hidden', 'text-red-500');
-            messageDiv.classList.add('text-green-500');
-            messageDiv.classList.remove('hidden');
-            setTimeout(() => messageDiv.classList.add('hidden'), 3000);
-            
-            // 重置表单
-            selectedMood = '';
-            document.getElementById('moodNote').value = '';
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.remove('ring-2', 'ring-blue-500');
-            });
-            
-            // 显示历史记录
-            displayMoodHistory();
-        });
-        
         // 清除个人记录
         document.getElementById('clearPersonalBtn').addEventListener('click', function() {
-            const userId = getUserId();
-            let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
-            
-            // 过滤出不是当前用户的记录
-            moodHistory = moodHistory.filter(entry => entry.userId !== userId);
-            
-            // 保存更新后的记录
-            localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
-            
-            // 显示消息
+        const userId = getUserId();
+        
+        if (confirm('确定要清除您的所有记录吗？此操作不可撤销。')) {
+            // 首先从Firebase获取所有记录
+            database.ref('moods').once('value')
+            .then((snapshot) => {
+                const firebaseMoods = snapshot.val() || {};
+                const deletePromises = [];
+                
+                // 找出属于当前用户的Firebase记录并删除
+                Object.entries(firebaseMoods).forEach(([key, mood]) => {
+                if (mood.userId === userId) {
+                    deletePromises.push(
+                    database.ref(`moods/${key}`).remove()
+                        .then(() => console.log(`Firebase记录已删除: ${key}`))
+                        .catch(err => console.error(`Firebase记录删除失败: ${key}`, err))
+                    );
+                }
+                });
+                
+                // 等待所有Firebase删除操作完成
+                return Promise.all(deletePromises);
+            })
+            .then(() => {
+                console.log("所有Firebase记录已清除");
+                
+                // 然后清除本地记录
+                let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+                moodHistory = moodHistory.filter(entry => entry.userId !== userId);
+                localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
+                
+                // 显示成功消息
+                const messageDiv = document.getElementById('moodMessage');
+                messageDiv.textContent = "您的所有记录已永久清除";
+                messageDiv.classList.remove('hidden', 'text-red-500');
+                messageDiv.classList.add('text-green-500');
+                messageDiv.classList.remove('hidden');
+                setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+                
+                // 更新显示
+                displayMoodHistory();
+            })
+            .catch((error) => {
+                console.error("清除记录失败:", error);
+                alert("清除记录失败，请稍后再试");
+            });
+        }
+        });
+        
+    // 删除特定记录
+    function deleteMoodRecord(recordId) {
+    const userId = getUserId();
+    
+    // 先检查本地存储
+    let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+    const recordIndex = moodHistory.findIndex(entry => entry.id === recordId);
+    
+    if (recordIndex !== -1) {
+        // 检查是否是当前用户的记录
+        if (moodHistory[recordIndex].userId === userId) {
+        const record = moodHistory[recordIndex];
+        
+        // 从本地存储中删除
+        moodHistory.splice(recordIndex, 1);
+        localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
+        
+        // 从Firebase中删除 - 关键修复部分
+        // 检查记录来源
+        if (record.source === 'firebase' || !record.source) {
+            // 如果是Firebase记录或未标记来源，尝试从Firebase删除
+            database.ref(`moods/${recordId}`).remove()
+            .then(() => {
+                console.log("记录已从Firebase中删除:", recordId);
+                
+                // 显示成功消息
+                const messageDiv = document.getElementById('moodMessage');
+                if (messageDiv) {
+                messageDiv.textContent = "记录已永久删除";
+                messageDiv.classList.remove('hidden', 'text-red-500');
+                messageDiv.classList.add('text-green-500');
+                messageDiv.classList.remove('hidden');
+                setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+                }
+                
+                // 更新显示
+                displayMoodHistory();
+            })
+            .catch((error) => {
+                console.error("Firebase删除失败:", error);
+                
+                // 即使Firebase删除失败，也显示本地删除成功
+                const messageDiv = document.getElementById('moodMessage');
+                if (messageDiv) {
+                messageDiv.textContent = "记录已从本地删除";
+                messageDiv.classList.remove('hidden', 'text-red-500');
+                messageDiv.classList.add('text-green-500');
+                messageDiv.classList.remove('hidden');
+                setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+                }
+            });
+        } else {
+            // 纯本地记录
             const messageDiv = document.getElementById('moodMessage');
-            messageDiv.textContent = "您的记录已清除";
+            if (messageDiv) {
+            messageDiv.textContent = "记录已删除";
             messageDiv.classList.remove('hidden', 'text-red-500');
             messageDiv.classList.add('text-green-500');
             messageDiv.classList.remove('hidden');
             setTimeout(() => messageDiv.classList.add('hidden'), 3000);
-            
-            // 更新显示
-            displayMoodHistory();
-        });
-        
-        // 删除特定记录
-        function deleteMoodRecord(recordId) {
-            let moodHistory = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
-            
-            // 找到要删除的记录索引
-            const recordIndex = moodHistory.findIndex(entry => entry.id === recordId);
-            
-            if (recordIndex !== -1) {
-                // 确保只删除属于当前用户的记录
-                if (moodHistory[recordIndex].userId === getUserId()) {
-                    moodHistory.splice(recordIndex, 1);
-                    localStorage.setItem('sharedMoodHistory', JSON.stringify(moodHistory));
-                    
-                    // 显示消息
-                    const messageDiv = document.getElementById('moodMessage');
-                    messageDiv.textContent = "记录已删除";
-                    messageDiv.classList.remove('hidden', 'text-red-500');
-                    messageDiv.classList.add('text-green-500');
-                    messageDiv.classList.remove('hidden');
-                    setTimeout(() => messageDiv.classList.add('hidden'), 3000);
-                    
-                    // 更新显示
-                    displayMoodHistory();
-                }
             }
         }
         
+        // 更新显示
+        displayMoodHistory();
+        } else {
+        // 不是当前用户的记录
+        alert('只能删除自己的记录！');
+        }
+    } else {
+        // 直接尝试从Firebase中删除
+        database.ref(`moods/${recordId}`).once('value')
+        .then((snapshot) => {
+            const record = snapshot.val();
+            if (record && record.userId === userId) {
+            return database.ref(`moods/${recordId}`).remove();
+            } else {
+            throw new Error('记录不存在或不属于当前用户');
+            }
+        })
+        .then(() => {
+            console.log("记录已从Firebase中删除:", recordId);
+            const messageDiv = document.getElementById('moodMessage');
+            if (messageDiv) {
+            messageDiv.textContent = "记录已永久删除";
+            messageDiv.classList.remove('hidden', 'text-red-500');
+            messageDiv.classList.add('text-green-500');
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => messageDiv.classList.add('hidden'), 3000);
+            }
+            // 更新显示
+            loadMoodsFromFirebase();
+        })
+        .catch((error) => {
+            console.error("删除失败:", error);
+            if (error.message !== '记录不存在或不属于当前用户') {
+            alert('删除失败，请稍后再试');
+            }
+        });
+    }
+    }
+
         // 水平滚动控制
         document.getElementById('scrollLeftBtn').addEventListener('click', function() {
             document.getElementById('moodCardsContainer').scrollBy({
@@ -1287,21 +1510,18 @@ let currentUserId = localStorage.getItem('userId');
                             moodEmoji = '😟'; 
                             moodClass = 'bg-purple-50 border-purple-100';
                             break;
-                        default: 
-                            moodEmoji = '📝';
-                            moodClass = 'bg-gray-50 border-gray-100';
                     }
                     
                     const cardDiv = document.createElement('div');
                     cardDiv.className = `mood-history-card p-4 rounded-lg border card-animation ${moodClass}`;
                     cardDiv.style.animationDelay = `${index * 0.1}s`;
                     
-                    // 是当前用户的记录则显示删除按钮
+                    // 是当前用户的记录则显示删除按钮 - 修改后的无onclick版本
                     const deleteButton = entry.userId === getUserId() ? 
                         `<button class="delete-btn text-gray-400 hover:text-red-500 ml-2" onclick="deleteMoodRecord('${entry.id}')">
                             <i class="fas fa-times"></i>
                         </button>` : '';
-                    
+
                     // 显示头像图标和名称
                     const avatarIcon = getAvatarIcon(entry.avatar || 'anonymous');
                     const avatarName = getAvatarName(entry.avatar || 'anonymous');
@@ -1383,19 +1603,24 @@ function addVisitorCounter() {
 function updateVisitorCount() {
   const visitorCountRef = database.ref('visitors/count');
   
-  visitorCountRef.transaction((currentCount) => {
-    return (currentCount || 0) + 1;
-  }).then((result) => {
-    if (result.committed) {
-      const newCount = result.snapshot.val();
-      // 更新页面上的访问计数显示
+  // 首先尝试获取当前计数
+  visitorCountRef.once('value').then(snapshot => {
+    let currentCount = snapshot.val() || 0;
+    
+    // 然后增加计数
+    currentCount += 1;
+    
+    // 更新Firebase和页面显示
+    visitorCountRef.set(currentCount).then(() => {
       const visitorCountElement = document.getElementById('visitor-count');
       if (visitorCountElement) {
-        visitorCountElement.textContent = newCount;
+        visitorCountElement.textContent = currentCount;
       }
-    }
-  }).catch((error) => {
-    console.error("访问计数更新失败:", error);
+    }).catch(error => {
+      console.error("更新访问计数失败:", error);
+    });
+  }).catch(error => {
+    console.error("获取访问计数失败:", error);
   });
 }
 
@@ -1494,81 +1719,95 @@ function resetMonthlyData() {
 
 // 初始化Firebase功能 - 调用此函数启动Firebase功能
 function initializeFirebaseFeatures() {
+  // 确保moods节点是对象而不是字符串
+  database.ref('moods').once('value', snapshot => {
+    if (snapshot.val() === "" || snapshot.val() === null) {
+      database.ref('moods').set({}).then(() => {
+        console.log("Moods节点已初始化为空对象");
+      });
+    }
+  });
+  
   // 确保用户已认证
   ensureUserAuthenticated();
   
   // 添加访问计数器
   addVisitorCounter();
   
+  // 加载Firebase心情记录
+  loadMoodsFromFirebase();
+  
   // 检查月度重置信息
   checkMonthlyResetInfo();
 }
-// 初始化数据库结构
-function initializeDatabaseStructure() {
-  // 检查visitors节点
-  database.ref('visitors').once('value', (snapshot) => {
-    const visitors = snapshot.val();
+
+// 从Firebase加载心情记录
+function loadMoodsFromFirebase() {
+  const moodsRef = database.ref('moods');
+  
+  moodsRef.on('value', (snapshot) => {
+    console.log("Firebase数据加载成功:", snapshot.val());
+    const firebaseMoods = snapshot.val() || {};
     
-    if (!visitors) {
-      // 如果不存在，创建初始结构
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      const nextResetDate = nextMonth.toISOString().split('T')[0];
-      
-      database.ref('visitors').set({
-        count: 0,
-        lastReset: today,
-        nextResetMessage: `数据将在${nextResetDate}重置`
+    // 结合本地存储和Firebase数据
+    syncMoodsWithLocalStorage(firebaseMoods);
+  });
+}
+
+// 同步Firebase和localStorage的心情记录
+function syncMoodsWithLocalStorage(firebaseMoods) {
+  let localMoods = JSON.parse(localStorage.getItem('sharedMoodHistory')) || [];
+  const allMoods = [];
+  
+  // 处理Firebase记录
+  Object.entries(firebaseMoods).forEach(([key, mood]) => {
+    allMoods.push({
+      id: key,
+      userId: mood.userId,
+      mood: mood.mood || 'neutral',
+      note: mood.content,
+      date: mood.date || new Date(mood.timestamp).toLocaleString(),
+      avatar: mood.avatar || 'anonymous',
+      source: 'firebase',
+      timestamp: mood.timestamp
+    });
+  });
+  
+  // 添加仅在本地存储的记录（不覆盖已删除的记录）
+  localMoods.forEach(localMood => {
+    // 检查这个记录是否已存在于Firebase中
+    // 如果记录来源是firebase但在firebase数据中找不到，说明已被删除，不再添加回来
+    if (localMood.source === 'firebase') {
+      const existsInFirebase = Object.keys(firebaseMoods).includes(localMood.id);
+      if (!existsInFirebase) {
+        // 这是一个已从Firebase删除的记录，跳过它
+        return;
+      }
+    }
+    
+    // 检查是否已经包含在合并列表中
+    const exists = allMoods.some(m => m.id === localMood.id);
+    if (!exists) {
+      allMoods.push({
+        ...localMood,
+        source: localMood.source || 'local'
       });
     }
   });
   
-  // 确保moods节点存在
-  database.ref('moods').once('value', (snapshot) => {
-    if (!snapshot.exists()) {
-      database.ref('moods').set({});
-    }
+  // 按时间排序
+  allMoods.sort((a, b) => {
+    const dateA = a.timestamp || new Date(a.date).getTime();
+    const dateB = b.timestamp || new Date(b.date).getTime();
+    return dateB - dateA;
   });
+  
+  // 更新本地存储
+  localStorage.setItem('sharedMoodHistory', JSON.stringify(allMoods));
+  
+  // 更新显示
+  displayMoodHistory();
 }
-
-// 在Firebase初始化后调用
-initializeDatabaseStructure();
-// 修改现有的saveMoodBtn点击事件 - 保存到Firebase
-const originalSaveBtnClick = document.getElementById('saveMoodBtn').onclick;
-document.getElementById('saveMoodBtn').onclick = function() {
-  const moodNote = document.getElementById('moodNote').value;
-  
-  if (!selectedMood && !moodNote) {
-    // 保留原有的验证逻辑
-    if (originalSaveBtnClick) {
-      originalSaveBtnClick.call(this);
-    }
-    return;
-  }
-  
-  // 保存到Firebase
-  ensureUserAuthenticated().then((userId) => {
-    // 创建一个新的心情记录
-    const newMoodRef = database.ref('moods').push();
-    
-    newMoodRef.set({
-      content: moodNote,
-      mood: selectedMood || 'neutral',
-      timestamp: Date.now(),
-      userId: userId,
-      avatar: selectedAvatar || 'anonymous'
-    }).then(() => {
-      // 触发原有的保存逻辑，更新UI
-      if (originalSaveBtnClick) {
-        originalSaveBtnClick.call(this);
-      }
-    }).catch((error) => {
-      console.error("保存心情失败:", error);
-      alert('保存失败，请稍后再试');
-    });
-  });
-};
 
 // 页面加载时初始化Firebase功能
 window.addEventListener('load', function() {
@@ -1577,8 +1816,6 @@ window.addEventListener('load', function() {
     </script>
 </body>
 </html>
-
-
 
 
 
